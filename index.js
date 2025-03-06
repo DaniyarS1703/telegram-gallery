@@ -45,4 +45,17 @@ pool.query('SELECT NOW()', (err, res) => {
 app.listen(3000, () => console.log('Сервер запущен на порту 3000'));
 
 // 🔥 Запуск бота
-bot.launch();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+// Подключаем Webhook вместо getUpdates
+app.post(`/bot${process.env.BOT_TOKEN}`, (req, res) => {
+    bot.handleUpdate(req.body);
+    res.sendStatus(200);
+});
+
+bot.telegram.setWebhook(`https://telegram-gallery.onrender.com/bot${process.env.BOT_TOKEN}`);
+
+app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
+
