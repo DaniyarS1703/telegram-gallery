@@ -10,17 +10,33 @@ app.use(express.static(path.join(__dirname, 'web')));
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-app.post('/photographers', async (req, res) => {
+app.get('/getRole', async (req, res) => {
     try {
-        const { name, bio, rating, portfolio } = req.body;
-        const result = await pool.query(
-            'INSERT INTO photographers (name, bio, rating, portfolio) VALUES ($1, $2, $3, $4) RETURNING *',
-            [name, bio, rating, portfolio]
-        );
-        res.json(result.rows[0]);
+        const { userId } = req.query;
+        const result = await pool.query('SELECT role FROM users WHERE telegram_id = $1', [userId]);
+
+        if (result.rows.length > 0) {
+            res.json({ role: result.rows[0].role });
+        } else {
+            res.json({ role: null });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Ошибка при добавлении фотографа');
+        res.status(500).send('Ошибка при получении роли');
+    }
+});
+
+app.post('/setRole', async (req, res) => {
+    try {
+        const { userId, role } = req.body;
+        await pool.query(
+            'INSERT INTO users (telegram_id, role) VALUES ($1, $2) ON CONFLICT (telegram_id) DO UPDATE SET role = $2',
+            [userId, role]
+        );
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Ошибка при установке роли');
     }
 });
 
@@ -44,10 +60,7 @@ bot.start((ctx) => {
     });
 });
 
-const WEBAPP_URL = process.env.WEBAPP_URL.trim(); // Убираем лишние пробелы и переносы строк
-bot.telegram.setWebhook(`${WEBAPP_URL}/bot${process.env.BOT_TOKEN}`);
-
-
+bot.telegram.setWebhook(`${process.env.WEBAPP_URL}/bot${process.env.BOT_TOKEN}`);
 app.post(`/bot${process.env.BOT_TOKEN}`, (req, res) => {
     bot.handleUpdate(req.body);
     res.sendStatus(200);
