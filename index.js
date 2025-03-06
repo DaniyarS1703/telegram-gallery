@@ -45,6 +45,7 @@ bot.start((ctx) => {
 });
 
 bot.telegram.setWebhook(`${process.env.WEBAPP_URL}/bot${process.env.BOT_TOKEN}`);
+
 app.post(`/bot${process.env.BOT_TOKEN}`, (req, res) => {
     bot.handleUpdate(req.body);
     res.sendStatus(200);
