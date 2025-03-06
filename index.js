@@ -10,7 +10,20 @@ app.use(express.static(path.join(__dirname, 'web')));
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// 📸 API для получения списка фотографов
+app.post('/photographers', async (req, res) => {
+    try {
+        const { name, bio, rating, portfolio } = req.body;
+        const result = await pool.query(
+            'INSERT INTO photographers (name, bio, rating, portfolio) VALUES ($1, $2, $3, $4) RETURNING *',
+            [name, bio, rating, portfolio]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Ошибка при добавлении фотографа');
+    }
+});
+
 app.get('/photographers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM photographers');
@@ -21,41 +34,20 @@ app.get('/photographers', async (req, res) => {
     }
 });
 
-// 📌 Команда /start открывает миниапп
 bot.start((ctx) => {
     ctx.reply('Добро пожаловать в "Галерею"! Открывай миниапп:', {
         reply_markup: {
             inline_keyboard: [[
-                { text: '📸 Открыть Галерею', web_app: { url: 'http://localhost:3000' } }
+                { text: '📸 Открыть Галерею', web_app: { url: process.env.WEBAPP_URL } }
             ]]
         }
     });
 });
 
-// 🔗 Проверка соединения с базой
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-        console.error('Ошибка подключения к базе данных:', err);
-    } else {
-        console.log('База данных подключена:', res.rows);
-    }
-});
-
-// 🚀 Запуск сервера
-app.listen(3000, () => console.log('Сервер запущен на порту 3000'));
-
-// 🔥 Запуск бота
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json());
-
-// Подключаем Webhook вместо getUpdates
+bot.telegram.setWebhook(`${process.env.WEBAPP_URL}/bot${process.env.BOT_TOKEN}`);
 app.post(`/bot${process.env.BOT_TOKEN}`, (req, res) => {
     bot.handleUpdate(req.body);
     res.sendStatus(200);
 });
 
-bot.telegram.setWebhook(`https://telegram-gallery.onrender.com/bot${process.env.BOT_TOKEN}`);
-
-app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
-
+app.listen(process.env.PORT || 3000, () => console.log('Сервер запущен!'));
