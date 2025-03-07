@@ -2,11 +2,14 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'gallery',
-    password: process.env.DB_PASSWORD, // Пароль из .env
-    port: 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
+
+pool.connect()
+    .then(() => console.log("✅ Успешное подключение к базе данных"))
+    .catch(err => console.error("❌ Ошибка подключения к базе данных:", err));
 
 module.exports = pool;
