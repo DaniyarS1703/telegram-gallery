@@ -18,7 +18,9 @@
 
                 container.innerHTML = '';
                 photographers.forEach(photo => {
-                    const avatarUrl = photo.avatar ? photo.avatar : 'https://via.placeholder.com/150';
+                    console.log(photo);  // 👈 Проверяем, какие данные приходят
+
+                    const avatarUrl = photo.avatar ? photo.avatar.trim() : 'https://via.placeholder.com/150';
 
                     const div = document.createElement('div');
                     div.className = 'photographer-card';
