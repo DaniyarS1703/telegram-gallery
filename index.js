@@ -9,6 +9,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'web')));
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
+const webAppUrl = process.env.WEBAPP_URL.trim(); // Убираем лишние пробелы и переносы строк
 
 // Проверяем подключение к базе
 app.get('/health', async (req, res) => {
@@ -33,18 +34,19 @@ app.get('/photographers', async (req, res) => {
 });
 
 // Установка Webhook
-bot.telegram.setWebhook(process.env.WEBAPP_URL.trim() + `/bot${process.env.BOT_TOKEN}`);
+bot.telegram.setWebhook(webAppUrl + `/bot${process.env.BOT_TOKEN}`);
 
 app.post(`/bot${process.env.BOT_TOKEN}`, (req, res) => {
     bot.handleUpdate(req.body);
     res.sendStatus(200);
 });
 
+// Команда /start с WebApp-кнопкой
 bot.start((ctx) => {
-    ctx.reply('Добро пожаловать в "Галерею"! Открывай миниапп:', {
+    ctx.reply('Добро пожаловать в "Галерею"! Открывайте миниапп:', {
         reply_markup: {
             inline_keyboard: [[
-                { text: '📸 Открыть Галерею', web_app: { url: process.env.WEBAPP_URL } }
+                { text: '📸 Открыть Галерею', web_app: { url: webAppUrl } }
             ]]
         }
     });
