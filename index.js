@@ -33,7 +33,7 @@ app.get('/photographers', async (req, res) => {
 });
 
 // Установка Webhook
-bot.telegram.setWebhook(`${process.env.WEBAPP_URL}/bot${process.env.BOT_TOKEN}`);
+bot.telegram.setWebhook(process.env.WEBAPP_URL.trim() + `/bot${process.env.BOT_TOKEN}`);
 
 app.post(`/bot${process.env.BOT_TOKEN}`, (req, res) => {
     bot.handleUpdate(req.body);
