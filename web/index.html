@@ -52,12 +52,14 @@
         }
         .portfolio {
             display: flex;
+            overflow-x: auto;
             gap: 5px;
             margin-top: 10px;
+            padding-bottom: 10px;
         }
         .portfolio img {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 5px;
             object-fit: cover;
             cursor: pointer;
@@ -91,7 +93,7 @@
 </head>
 <body>
 
-<div class="container" id="photographers-list">Загрузка...</div>
+<div class="container" id="photographers-list"></div>
 
 <script>
     async function fetchPhotographers() {
@@ -99,8 +101,7 @@
             const response = await fetch('/api/photographers');
             const photographers = await response.json();
             const container = document.getElementById("photographers-list");
-            container.innerHTML = "";
-            
+
             photographers.forEach((photographer) => {
                 const div = document.createElement("div");
                 div.classList.add("photographer");
@@ -110,23 +111,47 @@
                     <div class="bio">${photographer.bio}</div>
                     <div class="rating">${"⭐".repeat(Math.round(photographer.rating))}</div>
                     <div class="portfolio">
-                        ${photographer.portfolio.slice(0, 3).map((photo, index) =>
-                            `<img src="${photo}" alt="Фото ${index + 1}">`
+                        ${photographer.portfolio.map(photo =>
+                            `<img src="${photo}" alt="Фото" onclick="openModal('${photo}')">`
                         ).join("")}
                     </div>
                     <div class="buttons">
-                        <button class="btn btn-portfolio">📷 Портфолио</button>
                         <button class="btn btn-choose">✅ Выбрать</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
         } catch (error) {
-            console.error("Ошибка загрузки фотографов:", error);
-            document.getElementById("photographers-list").innerHTML = "Ошибка загрузки данных";
+            console.error('Ошибка загрузки фотографов:', error);
         }
     }
-    
+
+    function openModal(imageSrc) {
+        const modal = document.createElement("div");
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+
+        const img = document.createElement("img");
+        img.src = imageSrc;
+        img.style.maxWidth = "90%";
+        img.style.maxHeight = "90%";
+        img.style.borderRadius = "10px";
+
+        modal.appendChild(img);
+        document.body.appendChild(modal);
+
+        modal.onclick = () => {
+            document.body.removeChild(modal);
+        };
+    }
+
     fetchPhotographers();
 </script>
 

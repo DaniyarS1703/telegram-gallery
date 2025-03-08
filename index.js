@@ -2,18 +2,18 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { Telegraf, Markup } = require('telegraf');
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 const webAppUrl = process.env.WEBAPP_URL;
+const botToken = process.env.BOT_TOKEN;
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    ssl: { rejectUnauthorized: false }
 });
 
 app.use(cors());
@@ -35,9 +35,8 @@ app.get('/api/photographers', async (req, res) => {
     }
 });
 
-// Подключение бота Telegram
-const { Telegraf, Markup } = require('telegraf');
-const bot = new Telegraf(process.env.BOT_TOKEN);
+// Настройка Telegram бота
+const bot = new Telegraf(botToken);
 
 bot.start((ctx) => {
     ctx.reply(
@@ -48,11 +47,9 @@ bot.start((ctx) => {
     );
 });
 
-bot.launch().then(() => {
-    console.log('✅ Бот запущен!');
-}).catch(err => {
-    console.error('Ошибка запуска бота:', err);
-});
+bot.launch()
+    .then(() => console.log('✅ Бот запущен!'))
+    .catch(err => console.error('Ошибка запуска бота:', err));
 
 app.listen(port, async () => {
     try {
