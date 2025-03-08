@@ -1,56 +1,65 @@
 const express = require('express');
-const { Telegraf } = require('telegraf');
-const pool = require('./db');
-require('dotenv').config();
-const path = require('path');
+const { Pool } = require('pg');
+const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'web')));
+const port = process.env.PORT || 3000;
+const webAppUrl = process.env.WEBAPP_URL;
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-const webAppUrl = process.env.WEBAPP_URL.trim(); // Убираем лишние пробелы и переносы строк
-
-// Проверяем подключение к базе
-app.get('/health', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT NOW()');
-        res.json({ status: "OK", time: result.rows[0].now });
-    } catch (err) {
-        console.error("Ошибка соединения с базой данных:", err);
-        res.status(500).json({ status: "ERROR", error: err.message });
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
     }
+});
+
+app.use(cors());
+app.use(express.json());
+
+// Проверка работы сервера
+app.get('/', (req, res) => {
+    res.send('Сервер запущен!');
 });
 
 // Получение списка фотографов
-app.get('/photographers', async (req, res) => {
+app.get('/api/photographers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM photographers');
-        res.setHeader('Content-Type', 'application/json; charset=utf-8'); // Указываем кодировку явно
         res.json(result.rows);
     } catch (error) {
-        console.error("Ошибка при получении списка фотографов:", error);
-        res.status(500).json({ error: "Ошибка при получении списка фотографов", details: error.message });
+        console.error('Ошибка при получении списка фотографов:', error);
+        res.status(500).json({ error: 'Ошибка при получении списка фотографов' });
     }
 });
 
-// Установка Webhook
-bot.telegram.setWebhook(webAppUrl + `/bot${process.env.BOT_TOKEN}`);
+// Подключение бота Telegram
+const { Telegraf, Markup } = require('telegraf');
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-app.post(`/bot${process.env.BOT_TOKEN}`, (req, res) => {
-    bot.handleUpdate(req.body);
-    res.sendStatus(200);
-});
-
-// Команда /start с WebApp-кнопкой
 bot.start((ctx) => {
-    ctx.reply('Добро пожаловать в "Галерею"! Открывайте миниапп:', {
-        reply_markup: {
-            inline_keyboard: [[
-                { text: '📸 Открыть Галерею', web_app: { url: webAppUrl } }
-            ]]
-        }
-    });
+    ctx.reply(
+        'Добро пожаловать в "Галерею"! Открывай миниапп:',
+        Markup.keyboard([
+            [Markup.button.webApp('📸 Открыть Галерею', webAppUrl)]
+        ]).resize()
+    );
 });
 
-app.listen(process.env.PORT || 3000, () => console.log('✅ Сервер запущен!'));
+bot.launch().then(() => {
+    console.log('✅ Бот запущен!');
+}).catch(err => {
+    console.error('Ошибка запуска бота:', err);
+});
+
+app.listen(port, async () => {
+    try {
+        await pool.connect();
+        console.log('✅ Успешное подключение к базе данных');
+    } catch (error) {
+        console.error('❌ Ошибка подключения к базе данных:', error);
+    }
+    console.log(`Сервер запущен на порту ${port}`);
+});
