@@ -3,81 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Галерея</title>
-    <script>
-        async function loadPhotographers() {
-            try {
-                const response = await fetch('/photographers');
-                const photographers = await response.json();
-                const container = document.getElementById('photographers-list');
-
-                console.log("📸 Данные с сервера:", photographers); // 👈 Проверяем, какие данные приходят
-
-                if (!Array.isArray(photographers) || photographers.length === 0) {
-                    container.innerHTML = '<p>Фотографов пока нет.</p>';
-                    return;
-                }
-
-                container.innerHTML = '';
-                photographers.forEach(photo => {
-                    console.log(`📷 Обрабатываем: ${photo.name}, avatar: ${photo.avatar}`); // 👈 Лог каждого фотографа
-
-                    const avatarUrl = (photo.avatar && photo.avatar.trim()) ? photo.avatar.trim() : 'https://via.placeholder.com/150';
-
-                    const div = document.createElement('div');
-                    div.className = 'photographer-card';
-                    div.innerHTML = `
-                        <img src="${avatarUrl}" alt="Аватар ${photo.name}" class="avatar" onerror="this.onerror=null; this.src='https://via.placeholder.com/150';">
-                        <div class="info">
-                            <h3>${photo.name}</h3>
-                            <p>${photo.bio}</p>
-                            <p>⭐ Рейтинг: ${photo.rating}</p>
-                            <button onclick="selectPhotographer('${photo.id}')">Выбрать</button>
-                        </div>
-                    `;
-                    container.appendChild(div);
-                });
-            } catch (error) {
-                console.error('❌ Ошибка загрузки фотографов:', error);
-                document.getElementById('photographers-list').innerHTML = '<p>Ошибка загрузки данных.</p>';
-            }
-        }
-
-        function selectPhotographer(id) {
-            alert('Вы выбрали фотографа с ID: ' + id);
-        }
-
-        window.onload = loadPhotographers;
-    </script>
+    <title>Галерея фотографов</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .photographer-card { 
-            border: 1px solid #ccc; 
-            padding: 10px; 
-            margin: 10px 0; 
-            display: flex;
-            align-items: center;
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .photographer-card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            display: inline-block;
+            width: 250px;
+            text-align: center;
+            background: #f9f9f9;
         }
         .avatar {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            margin-right: 15px;
+            object-fit: cover;
         }
-        .info {
-            flex: 1;
-        }
-        button { 
-            background-color: blue; 
-            color: white; 
-            padding: 5px 10px; 
-            border: none; 
-            cursor: pointer; 
+        .stars {
+            color: gold;
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Галерея</h1>
-    <div id="photographers-list">Загрузка...</div>
+
+    <h1>📸 Галерея фотографов</h1>
+    <div id="gallery"></div>
+
+    <script>
+        async function fetchPhotographers() {
+            try {
+                const response = await fetch('/photographers');
+                const photographers = await response.json();
+
+                console.log("📊 Данные с сервера:", photographers); // Лог данных в консоли браузера
+
+                const gallery = document.getElementById('gallery');
+                gallery.innerHTML = '';
+
+                photographers.forEach(photographer => {
+                    console.log(`📷 ${photographer.name} рейтинг: ${photographer.rating}`); // Проверка рейтинга
+
+                    const card = document.createElement('div');
+                    card.classList.add('photographer-card');
+
+                    card.innerHTML = `
+                        <img class="avatar" src="${photographer.avatar}" alt="Аватар">
+                        <h3>${photographer.name}</h3>
+                        <p>${photographer.bio}</p>
+                        <p class="stars">${getStars(photographer.rating)}</p>
+                        <button onclick="selectPhotographer('${photographer.name}')">Выбрать</button>
+                    `;
+                    gallery.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('❌ Ошибка при загрузке фотографов:', error);
+            }
+        }
+
+        // Функция для генерации звёздочек по рейтингу
+        function getStars(rating) {
+            console.log(`⭐ Генерируем звезды для рейтинга: ${rating}`); // Лог в консоль
+
+            const fullStars = Math.floor(rating); // Полные звезды
+            const halfStar = rating % 1 >= 0.5 ? '⭐️' : ''; // Половинка, если 0.5
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0); // Пустые звезды
+
+            return '⭐'.repeat(fullStars) + halfStar + '☆'.repeat(emptyStars);
+        }
+
+        function selectPhotographer(name) {
+            alert(`Вы выбрали ${name}!`);
+        }
+
+        fetchPhotographers();
+    </script>
+
 </body>
 </html>
