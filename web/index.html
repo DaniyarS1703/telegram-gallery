@@ -5,83 +5,216 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Галерея фотографов</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .photographer-card {
-            border: 1px solid #ccc;
-            border-radius: 10px;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
             padding: 15px;
-            margin: 10px;
-            display: inline-block;
-            width: 250px;
-            text-align: center;
-            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .photographer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
         }
         .avatar {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
+            margin-bottom: 10px;
         }
-        .stars {
-            color: gold;
-            font-size: 20px;
+        .name {
+            font-size: 18px;
+            font-weight: bold;
         }
+        .bio {
+            font-size: 14px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        .rating {
+            font-size: 16px;
+            color: #f5c518;
+            margin-bottom: 10px;
+        }
+        .portfolio {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .portfolio img {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .portfolio img:hover {
+            transform: scale(1.1);
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-choose {
+            background: #007bff;
+            color: white;
+        }
+        .btn-portfolio {
+            background: #28a745;
+            color: white;
+        }
+
+        /* КАРУСЕЛЬ */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .modal img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+        }
+        .prev, .next {
+            position: absolute;
+            top: 50%;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 50%;
+            display: none;
+        }
+        .prev { left: 10px; }
+        .next { right: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>📸 Галерея фотографов</h1>
-    <div id="gallery"></div>
+<div class="container" id="photographers-list"></div>
 
-    <script>
-        async function fetchPhotographers() {
-            try {
-                const response = await fetch('/photographers');
-                const photographers = await response.json();
+<!-- КАРУСЕЛЬ -->
+<div id="modal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <span class="prev" id="prevBtn" onclick="changeSlide(-1)">&#10094;</span>
+    <img id="modal-img" class="modal-content">
+    <span class="next" id="nextBtn" onclick="changeSlide(1)">&#10095;</span>
+</div>
 
-                console.log("📊 Данные с сервера:", photographers); // Лог данных в консоли браузера
-
-                const gallery = document.getElementById('gallery');
-                gallery.innerHTML = '';
-
-                photographers.forEach(photographer => {
-                    console.log(`📷 ${photographer.name} рейтинг: ${photographer.rating}`); // Проверка рейтинга
-
-                    const card = document.createElement('div');
-                    card.classList.add('photographer-card');
-
-                    card.innerHTML = `
-                        <img class="avatar" src="${photographer.avatar}" alt="Аватар">
-                        <h3>${photographer.name}</h3>
-                        <p>${photographer.bio}</p>
-                        <p class="stars">${getStars(photographer.rating)}</p>
-                        <button onclick="selectPhotographer('${photographer.name}')">Выбрать</button>
-                    `;
-                    gallery.appendChild(card);
-                });
-
-            } catch (error) {
-                console.error('❌ Ошибка при загрузке фотографов:', error);
-            }
+<script>
+    const photographers = [
+        {
+            "id": 3,
+            "name": "Александр Иванов",
+            "bio": "Фотограф с 10-летним опытом.",
+            "rating": 4.9,
+            "portfolio": [
+                "https://res.cloudinary.com/dshbfmrk6/image/upload/v1741379644/photo1.jpg",
+                "https://res.cloudinary.com/dshbfmrk6/image/upload/v1741379644/photo2.jpg"
+            ],
+            "avatar": "https://res.cloudinary.com/dshbfmrk6/image/upload/v1741379644/alexander_processed_oesfgy.jpg"
         }
+    ];
 
-        // Функция для генерации звёздочек по рейтингу
-        function getStars(rating) {
-            console.log(`⭐ Генерируем звезды для рейтинга: ${rating}`); // Лог в консоль
+    const container = document.getElementById("photographers-list");
 
-            const fullStars = Math.floor(rating); // Полные звезды
-            const halfStar = rating % 1 >= 0.5 ? '⭐️' : ''; // Половинка, если 0.5
-            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0); // Пустые звезды
+    photographers.forEach((photographer) => {
+        const div = document.createElement("div");
+        div.classList.add("photographer");
+        div.innerHTML = `
+            <img class="avatar" src="${photographer.avatar}" alt="${photographer.name}">
+            <div class="name">${photographer.name}</div>
+            <div class="bio">${photographer.bio}</div>
+            <div class="rating">${"⭐".repeat(Math.round(photographer.rating))}</div>
+            <div class="portfolio">
+                ${photographer.portfolio.slice(0, 3).map((photo, index) =>
+                    `<img src="${photo}" alt="Фото ${index + 1}" onclick="openModal(${photographer.id}, ${index})">`
+                ).join("")}
+            </div>
+            <div class="buttons">
+                <button class="btn btn-portfolio" onclick="openModal(${photographer.id}, 0)">📷 Портфолио</button>
+                <button class="btn btn-choose">✅ Выбрать</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
 
-            return '⭐'.repeat(fullStars) + halfStar + '☆'.repeat(emptyStars);
-        }
+    let currentPhotographer = null;
+    let currentPhotoIndex = 0;
 
-        function selectPhotographer(name) {
-            alert(`Вы выбрали ${name}!`);
-        }
+    function openModal(id, index) {
+        currentPhotographer = photographers.find(p => p.id === id);
+        currentPhotoIndex = index;
+        updateModalImage();
+        document.getElementById("modal").style.display = "flex";
+    }
 
-        fetchPhotographers();
-    </script>
+    function closeModal() {
+        document.getElementById("modal").style.display = "none";
+    }
+
+    function changeSlide(step) {
+        currentPhotoIndex += step;
+        updateModalImage();
+    }
+
+    function updateModalImage() {
+        const modalImg = document.getElementById("modal-img");
+        modalImg.src = currentPhotographer.portfolio[currentPhotoIndex];
+
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        prevBtn.style.display = currentPhotoIndex > 0 ? "block" : "none";
+        nextBtn.style.display = currentPhotoIndex < currentPhotographer.portfolio.length - 1 ? "block" : "none";
+    }
+</script>
 
 </body>
 </html>

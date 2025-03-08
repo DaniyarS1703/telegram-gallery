@@ -26,11 +26,11 @@ app.get('/health', async (req, res) => {
 app.get('/photographers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM photographers');
-        console.log("✅ Запрос к базе выполнен:", result.rows); // Лог для проверки
+        res.setHeader('Content-Type', 'application/json; charset=utf-8'); // Указываем кодировку явно
         res.json(result.rows);
-    } catch (err) {
-        console.error("❌ Ошибка при получении списка фотографов:", err);
-        res.status(500).send({ error: "Ошибка при получении списка фотографов", details: err.message });
+    } catch (error) {
+        console.error("Ошибка при получении списка фотографов:", error);
+        res.status(500).json({ error: "Ошибка при получении списка фотографов", details: error.message });
     }
 });
 
