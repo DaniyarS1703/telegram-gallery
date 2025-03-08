@@ -11,7 +11,7 @@
                 const photographers = await response.json();
                 const container = document.getElementById('photographers-list');
 
-                console.log("Данные с сервера:", photographers); // 👈 Проверяем, какие данные приходят
+                console.log("📸 Данные с сервера:", photographers); // 👈 Проверяем, какие данные приходят
 
                 if (!Array.isArray(photographers) || photographers.length === 0) {
                     container.innerHTML = '<p>Фотографов пока нет.</p>';
@@ -20,7 +20,9 @@
 
                 container.innerHTML = '';
                 photographers.forEach(photo => {
-                    const avatarUrl = photo.avatar ? photo.avatar.trim() : 'https://via.placeholder.com/150';
+                    console.log(`📷 Обрабатываем: ${photo.name}, avatar: ${photo.avatar}`); // 👈 Лог каждого фотографа
+
+                    const avatarUrl = (photo.avatar && photo.avatar.trim()) ? photo.avatar.trim() : 'https://via.placeholder.com/150';
 
                     const div = document.createElement('div');
                     div.className = 'photographer-card';
@@ -36,7 +38,7 @@
                     container.appendChild(div);
                 });
             } catch (error) {
-                console.error('Ошибка загрузки фотографов:', error);
+                console.error('❌ Ошибка загрузки фотографов:', error);
                 document.getElementById('photographers-list').innerHTML = '<p>Ошибка загрузки данных.</p>';
             }
         }
