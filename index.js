@@ -9,22 +9,24 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 const webAppUrl = process.env.WEBAPP_URL;
-const botToken = process.env.BOT_TOKEN;
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
+// 📌 Включаем CORS, чтобы фронтенд мог делать запросы к API
 app.use(cors());
 app.use(express.json());
 
-// Проверка работы сервера
+// 📌 Проверка работы сервера
 app.get('/', (req, res) => {
     res.send('Сервер запущен!');
 });
 
-// Получение списка фотографов
+// 📌 Получение списка фотографов из базы данных
 app.get('/api/photographers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM photographers');
@@ -35,8 +37,8 @@ app.get('/api/photographers', async (req, res) => {
     }
 });
 
-// Настройка Telegram бота
-const bot = new Telegraf(botToken);
+// 📌 Запуск Telegram-бота
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
 bot.start((ctx) => {
     ctx.reply(
@@ -47,10 +49,13 @@ bot.start((ctx) => {
     );
 });
 
-bot.launch()
-    .then(() => console.log('✅ Бот запущен!'))
-    .catch(err => console.error('Ошибка запуска бота:', err));
+bot.launch().then(() => {
+    console.log('✅ Бот запущен!');
+}).catch(err => {
+    console.error('Ошибка запуска бота:', err);
+});
 
+// 📌 Запуск сервера
 app.listen(port, async () => {
     try {
         await pool.connect();
@@ -58,5 +63,5 @@ app.listen(port, async () => {
     } catch (error) {
         console.error('❌ Ошибка подключения к базе данных:', error);
     }
-    console.log(`Сервер запущен на порту ${port}`);
+    console.log(`🚀 Сервер запущен на порту ${port}`);
 });
