@@ -1,30 +1,26 @@
-const TelegramBot = require('node-telegram-bot-api');
+const { Telegraf } = require('telegraf');
 const axios = require('axios');
 require('dotenv').config();
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) {
-  console.error('TELEGRAM_BOT_TOKEN не задан в .env');
+  console.error('TELEGRAM_BOT_TOKEN не задан в переменных окружения');
   process.exit(1);
 }
 
-// Создаем бота в режиме polling (для разработки)
-const bot = new TelegramBot(token, { polling: true });
+const bot = new Telegraf(token);
 
-// Обработчик команды /start – вывод списка фотографов
-bot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
+// Команда /start – вывод списка фотографов
+bot.start(async (ctx) => {
   let message = 'Добро пожаловать!\n\nСписок фотографов:\n';
-  
   try {
     // Получаем список фотографов из API
     const response = await axios.get('http://localhost:3000/api/photographers');
     const photographers = response.data;
-    
     if (photographers.length === 0) {
       message += 'Фотографы не найдены.';
     } else {
-      photographers.forEach(photographer => {
+      photographers.forEach((photographer) => {
         message += `ID: ${photographer.id} – ${photographer.name} (Рейтинг: ${photographer.rating})\n`;
       });
     }
@@ -32,43 +28,39 @@ bot.onText(/\/start/, async (msg) => {
     console.error('Ошибка при получении фотографов:', error);
     message = 'Ошибка при получении списка фотографов.';
   }
-  
-  bot.sendMessage(chatId, message);
+  ctx.reply(message);
 });
 
-// Обработчик команды /order для заказа фотографа по ID
-bot.onText(/\/order (\d+)/, async (msg, match) => {
-  const chatId = msg.chat.id;
-  const photographerId = match[1];
-  
-  // Пока просто отправляем сообщение
-  bot.sendMessage(chatId, `Вы заказали фотографа с ID: ${photographerId}`);
+// Команда /order для заказа фотографа по ID, например: /order 1
+bot.command('order', (ctx) => {
+  const parts = ctx.message.text.split(' ');
+  if (parts.length < 2) {
+    ctx.reply('Используйте: /order <ID>');
+  } else {
+    const photographerId = parts[1];
+    ctx.reply(`Вы заказали фотографа с ID: ${photographerId}`);
+  }
 });
 
-// Новая команда /miniapp для открытия миниаппа внутри Telegram
-bot.onText(/\/miniapp/, (msg) => {
-  const chatId = msg.chat.id;
-  
-  // URL миниаппа должен быть доступен по HTTPS!
-  // Если тестируете локально, можно использовать ngrok для проброса локального сервера.
-  const miniAppUrl = "https://telegram-gallery.onrender.com";
-
-  const options = {
+// Команда /miniapp для открытия миниаппа внутри Telegram
+bot.command('miniapp', (ctx) => {
+  // URL миниаппа можно задать через переменную окружения WEBAPP_URL,
+  // если не задан, используем https://telegram-gallery.onrender.com по умолчанию.
+  const miniAppUrl = process.env.WEBAPP_URL || "https://telegram-gallery.onrender.com";
+  ctx.reply('Откройте мини-апп, нажав на кнопку ниже:', {
     reply_markup: {
       inline_keyboard: [
         [
           {
             text: "Открыть мини-апп",
-            web_app: {
-              url: miniAppUrl
-            }
+            web_app: { url: miniAppUrl }
           }
         ]
       ]
     }
-  };
-
-  bot.sendMessage(chatId, "Откройте мини-апп, нажав на кнопку ниже:", options);
+  });
 });
 
-console.log('Telegram Bot запущен...');
+bot.launch()
+  .then(() => console.log('Telegram Bot запущен...'))
+  .catch((err) => console.error('Ошибка запуска бота:', err));
