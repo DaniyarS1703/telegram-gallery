@@ -51,7 +51,7 @@ bot.onText(/\/miniapp/, (msg) => {
   
   // URL миниаппа должен быть доступен по HTTPS!
   // Если тестируете локально, можно использовать ngrok для проброса локального сервера.
-  const miniAppUrl = "https://your-secure-domain.com"; // Замените на реальный URL вашего миниаппа
+  const miniAppUrl = "https://telegram-gallery.onrender.com";
 
   const options = {
     reply_markup: {
