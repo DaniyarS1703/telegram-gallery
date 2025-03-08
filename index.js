@@ -8,7 +8,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const webAppUrl = process.env.WEBAPP_URL;
+const webAppUrl = process.env.WEBAPP_URL.trim();
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -44,7 +44,7 @@ bot.start((ctx) => {
     ctx.reply(
         'Добро пожаловать в "Галерею"! Открывай миниапп:',
         Markup.keyboard([
-            [Markup.button.webApp('📸 Открыть Галерею', webAppUrl)]
+            [Markup.button.webApp('📸 Открыть Галерею', webAppUrl.trim())]
         ]).resize()
     );
 });
