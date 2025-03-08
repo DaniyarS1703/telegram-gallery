@@ -44,8 +44,6 @@ bot.command('order', (ctx) => {
 
 // Команда /miniapp для открытия миниаппа внутри Telegram
 bot.command('miniapp', (ctx) => {
-  // URL миниаппа можно задать через переменную окружения WEBAPP_URL,
-  // если не задан, используем https://telegram-gallery.onrender.com по умолчанию.
   const miniAppUrl = process.env.WEBAPP_URL || "https://telegram-gallery.onrender.com";
   ctx.reply('Откройте мини-апп, нажав на кнопку ниже:', {
     reply_markup: {
