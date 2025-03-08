@@ -87,133 +87,47 @@
             background: #28a745;
             color: white;
         }
-
-        /* КАРУСЕЛЬ */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            position: relative;
-            max-width: 90%;
-            max-height: 90%;
-        }
-        .modal img {
-            width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            color: white;
-            cursor: pointer;
-        }
-        .prev, .next {
-            position: absolute;
-            top: 50%;
-            font-size: 24px;
-            color: white;
-            cursor: pointer;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 50%;
-            display: none;
-        }
-        .prev { left: 10px; }
-        .next { right: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container" id="photographers-list"></div>
-
-<!-- КАРУСЕЛЬ -->
-<div id="modal" class="modal">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <span class="prev" id="prevBtn" onclick="changeSlide(-1)">&#10094;</span>
-    <img id="modal-img" class="modal-content">
-    <span class="next" id="nextBtn" onclick="changeSlide(1)">&#10095;</span>
-</div>
+<div class="container" id="photographers-list">Загрузка...</div>
 
 <script>
-    const photographers = [
-        {
-            "id": 3,
-            "name": "Александр Иванов",
-            "bio": "Фотограф с 10-летним опытом.",
-            "rating": 4.9,
-            "portfolio": [
-                "https://res.cloudinary.com/dshbfmrk6/image/upload/v1741379644/photo1.jpg",
-                "https://res.cloudinary.com/dshbfmrk6/image/upload/v1741379644/photo2.jpg"
-            ],
-            "avatar": "https://res.cloudinary.com/dshbfmrk6/image/upload/v1741379644/alexander_processed_oesfgy.jpg"
+    async function fetchPhotographers() {
+        try {
+            const response = await fetch('/api/photographers');
+            const photographers = await response.json();
+            const container = document.getElementById("photographers-list");
+            container.innerHTML = "";
+            
+            photographers.forEach((photographer) => {
+                const div = document.createElement("div");
+                div.classList.add("photographer");
+                div.innerHTML = `
+                    <img class="avatar" src="${photographer.avatar}" alt="${photographer.name}">
+                    <div class="name">${photographer.name}</div>
+                    <div class="bio">${photographer.bio}</div>
+                    <div class="rating">${"⭐".repeat(Math.round(photographer.rating))}</div>
+                    <div class="portfolio">
+                        ${photographer.portfolio.slice(0, 3).map((photo, index) =>
+                            `<img src="${photo}" alt="Фото ${index + 1}">`
+                        ).join("")}
+                    </div>
+                    <div class="buttons">
+                        <button class="btn btn-portfolio">📷 Портфолио</button>
+                        <button class="btn btn-choose">✅ Выбрать</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки фотографов:", error);
+            document.getElementById("photographers-list").innerHTML = "Ошибка загрузки данных";
         }
-    ];
-
-    const container = document.getElementById("photographers-list");
-
-    photographers.forEach((photographer) => {
-        const div = document.createElement("div");
-        div.classList.add("photographer");
-        div.innerHTML = `
-            <img class="avatar" src="${photographer.avatar}" alt="${photographer.name}">
-            <div class="name">${photographer.name}</div>
-            <div class="bio">${photographer.bio}</div>
-            <div class="rating">${"⭐".repeat(Math.round(photographer.rating))}</div>
-            <div class="portfolio">
-                ${photographer.portfolio.slice(0, 3).map((photo, index) =>
-                    `<img src="${photo}" alt="Фото ${index + 1}" onclick="openModal(${photographer.id}, ${index})">`
-                ).join("")}
-            </div>
-            <div class="buttons">
-                <button class="btn btn-portfolio" onclick="openModal(${photographer.id}, 0)">📷 Портфолио</button>
-                <button class="btn btn-choose">✅ Выбрать</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-
-    let currentPhotographer = null;
-    let currentPhotoIndex = 0;
-
-    function openModal(id, index) {
-        currentPhotographer = photographers.find(p => p.id === id);
-        currentPhotoIndex = index;
-        updateModalImage();
-        document.getElementById("modal").style.display = "flex";
     }
-
-    function closeModal() {
-        document.getElementById("modal").style.display = "none";
-    }
-
-    function changeSlide(step) {
-        currentPhotoIndex += step;
-        updateModalImage();
-    }
-
-    function updateModalImage() {
-        const modalImg = document.getElementById("modal-img");
-        modalImg.src = currentPhotographer.portfolio[currentPhotoIndex];
-
-        const prevBtn = document.getElementById("prevBtn");
-        const nextBtn = document.getElementById("nextBtn");
-
-        prevBtn.style.display = currentPhotoIndex > 0 ? "block" : "none";
-        nextBtn.style.display = currentPhotoIndex < currentPhotographer.portfolio.length - 1 ? "block" : "none";
-    }
+    
+    fetchPhotographers();
 </script>
 
 </body>
