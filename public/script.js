@@ -21,11 +21,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
             photographersList.innerHTML = "";
             photographers.forEach((photographer) => {
+                const avatarUrl = photographer.avatar ? photographer.avatar : "https://via.placeholder.com/150";
+
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
-
-                // Проверяем, есть ли аватарка, если нет - ставим заглушку
-                const avatarUrl = photographer.avatar ? photographer.avatar : "https://via.placeholder.com/150";
 
                 photographerElement.innerHTML = `
                     <div class="photographer-card">
