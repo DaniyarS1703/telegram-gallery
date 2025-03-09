@@ -14,7 +14,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
-        const photographers = await response.json();
+        let photographers = await response.json();
+
+        // 📌 Сортируем по рейтингу (если одинаковый – случайное расположение)
+        photographers.sort((a, b) => {
+            if (b.rating === a.rating) return Math.random() - 0.5;
+            return b.rating - a.rating;
+        });
 
         if (photographers.length === 0) {
             photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
@@ -24,91 +30,61 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
 
-                // Создаем HTML карточки фотографа
                 photographerElement.innerHTML = `
                     <div class="photographer-card">
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <p>⭐ ${photographer.rating}</p>
-                        <div class="carousel-container">
-                            <button class="prev-btn">&lt;</button>
-                            <div class="carousel" id="carousel-${photographer.id}">
-                                ${photographer.portfolio.map(img => `<img src="${img}" alt="Portfolio">`).join('')}
-                            </div>
-                            <button class="next-btn">&gt;</button>
-                        </div>
+                        <div class="rating">${generateStars(photographer.rating)}</div>
+                        <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
                     </div>
                 `;
 
                 photographersList.appendChild(photographerElement);
-
-                // Оптимизированная карусель
-                const carousel = document.getElementById(`carousel-${photographer.id}`);
-                const prevBtn = photographerElement.querySelector(".prev-btn");
-                const nextBtn = photographerElement.querySelector(".next-btn");
-
-                let isDragging = false;
-                let startX, scrollLeft;
-
-                // Отключаем pointer-events для изображений, чтобы тянуть проще
-                carousel.querySelectorAll("img").forEach(img => {
-                    img.style.pointerEvents = "none";
-                });
-
-                // Начало перетаскивания (momentum отключен)
-                carousel.addEventListener("mousedown", (e) => {
-                    isDragging = true;
-                    startX = e.clientX;
-                    scrollLeft = carousel.scrollLeft;
-                    carousel.style.scrollBehavior = "auto"; // Отключаем плавность, чтобы ускорить
-                    e.preventDefault();
-                });
-
-                // Движение мыши
-                carousel.addEventListener("mousemove", (e) => {
-                    if (!isDragging) return;
-                    const deltaX = e.clientX - startX;
-                    carousel.scrollLeft = scrollLeft - deltaX;
-                });
-
-                // Окончание перетаскивания
-                carousel.addEventListener("mouseup", () => {
-                    isDragging = false;
-                    carousel.style.scrollBehavior = "smooth"; // Включаем плавность после отпускания
-                });
-
-                carousel.addEventListener("mouseleave", () => {
-                    isDragging = false;
-                    carousel.style.scrollBehavior = "smooth";
-                });
-
-                // Прокрутка кнопками (оставляем)
-                prevBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: -100, behavior: "smooth" });
-                });
-
-                nextBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: 100, behavior: "smooth" });
-                });
             });
+
+            // 📌 Подключаем функционал модального окна
+            setupModal();
         }
     } catch (error) {
         console.error("Ошибка загрузки фотографов:", error);
         photographersList.innerHTML = "<p>Ошибка загрузки данных.</p>";
     }
 });
-document.addEventListener("DOMContentLoaded", () => {
-    const portfolioImages = document.querySelectorAll(".portfolio img");
+
+// 📌 Функция генерации звезд рейтинга
+function generateStars(rating) {
+    let starsHTML = "";
+    for (let i = 1; i <= 5; i++) {
+        if (i <= Math.floor(rating)) {
+            starsHTML += `<span class="star full"></span>`; // Полная звезда
+        } else if (i - rating < 1) {
+            starsHTML += `<span class="star half"></span>`; // Половина звезды
+        } else {
+            starsHTML += `<span class="star empty"></span>`; // Пустая звезда
+        }
+    }
+    return starsHTML;
+}
+
+// 📌 Функция генерации изображений портфолио
+function generatePortfolio(images) {
+    if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
+
+    return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
+}
+
+// 📌 Функция открытия изображений в модальном окне
+function setupModal() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
-    modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Просмотр изображения"></div>`;
+    modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Просмотр"></div>`;
     document.body.appendChild(modal);
 
     const modalImg = modal.querySelector("img");
     const closeModal = modal.querySelector(".close");
 
-    portfolioImages.forEach(img => {
+    document.querySelectorAll(".portfolio-img").forEach(img => {
         img.addEventListener("click", () => {
             modal.style.display = "flex";
             modalImg.src = img.src;
@@ -124,4 +100,4 @@ document.addEventListener("DOMContentLoaded", () => {
             modal.style.display = "none";
         }
     });
-});
+}
