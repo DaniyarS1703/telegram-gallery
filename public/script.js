@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         
                         <div class="portfolio-container">
                             <button class="scroll-button left" onclick="scrollPortfolio(this, -1)">&#9664;</button>
-                            <div class="portfolio" onmousedown="startDrag(event, this)">
+                            <div class="portfolio">
                                 ${photographer.portfolio.map(img => `
                                     <img src="${img}" alt="Фото портфолио" onclick="openModal('${img}')">
                                 `).join('')}
@@ -53,6 +53,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
 
                 photographersList.appendChild(photographerElement);
+
+                // 📌 Инициализация Drag & Scroll
+                setupDragScroll(photographerElement.querySelector(".portfolio"));
             });
         }
     } catch (error) {
@@ -70,27 +73,35 @@ function generateStarRating(rating) {
     return '★'.repeat(fullStars) + halfStar + '☆'.repeat(emptyStars);
 }
 
-// 📌 Перетаскивание карусели
-function startDrag(event, portfolio) {
-    let isDragging = false;
-    let startX = event.pageX - portfolio.offsetLeft;
-    let scrollLeft = portfolio.scrollLeft;
+// 📌 Перетаскивание карусели мышкой
+function setupDragScroll(portfolio) {
+    let isDown = false;
+    let startX, scrollLeft;
 
-    function onMouseMove(e) {
-        if (!isDragging) return;
+    portfolio.addEventListener("mousedown", (e) => {
+        isDown = true;
+        startX = e.pageX - portfolio.offsetLeft;
+        scrollLeft = portfolio.scrollLeft;
+        portfolio.style.cursor = "grabbing";
+    });
+
+    portfolio.addEventListener("mouseleave", () => {
+        isDown = false;
+        portfolio.style.cursor = "grab";
+    });
+
+    portfolio.addEventListener("mouseup", () => {
+        isDown = false;
+        portfolio.style.cursor = "grab";
+    });
+
+    portfolio.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
         const x = e.pageX - portfolio.offsetLeft;
-        portfolio.scrollLeft = scrollLeft - (x - startX);
-    }
-
-    function onMouseUp() {
-        isDragging = false;
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-    }
-
-    isDragging = true;
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+        const walk = (x - startX) * 2; // Умножаем на 2 для ускоренного движения
+        portfolio.scrollLeft = scrollLeft - walk;
+    });
 }
 
 // 📌 Прокрутка кнопками
