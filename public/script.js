@@ -21,17 +21,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
             photographersList.innerHTML = "";
             photographers.forEach((photographer) => {
-                const avatarUrl = photographer.avatar ? photographer.avatar : "https://via.placeholder.com/150";
-
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
 
+                // 🔥 Создаём звёздочки вместо числа
+                const stars = generateStars(photographer.rating);
+
                 photographerElement.innerHTML = `
                     <div class="photographer-card">
-                        <img src="${avatarUrl}" alt="${photographer.name}" class="avatar">
+                        <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <p>⭐ ${photographer.rating}</p>
+                        <p>${stars}</p>
                     </div>
                 `;
 
@@ -43,3 +44,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         photographersList.innerHTML = "<p>Ошибка загрузки данных.</p>";
     }
 });
+
+// 🔥 Функция для генерации звёздочек по рейтингу
+function generateStars(rating) {
+    const fullStar = "⭐"; // Полная звезда
+    const emptyStar = "☆"; // Пустая звезда
+    const roundedRating = Math.round(rating); // Округляем рейтинг
+
+    return fullStar.repeat(roundedRating) + emptyStar.repeat(5 - roundedRating);
+}

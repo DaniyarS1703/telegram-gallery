@@ -40,3 +40,9 @@ h1 {
 .photographer-card p {
     margin: 5px 0;
 }
+
+.photographer-card p {
+    font-size: 18px;
+    color: #ffcc00; /* Жёлтый цвет для звёзд */
+    font-weight: bold;
+}
