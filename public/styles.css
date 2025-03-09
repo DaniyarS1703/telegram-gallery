@@ -1,91 +1,34 @@
-/* Общие стили */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const pool = require('./db'); // Подключение к базе данных
 
-.container {
-    width: 90%;
-    max-width: 600px;
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    text-align: center;
-}
+const app = express();
+const PORT = process.env.PORT || 10000;
 
-h1 {
-    color: #333;
-}
+app.use(cors());
+app.use(express.json());
 
-/* Карточки фотографов */
-.photographer {
-    display: flex;
-    align-items: center;
-    background: #ffffff;
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+// 📌 Раздача статических файлов (для миниаппа)
+app.use(express.static(path.join(__dirname, 'public')));
 
-.photographer img.avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
+// 📌 Главная страница миниаппа
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-.photographer-card {
-    flex: 1;
-    text-align: left;
-}
+// 📌 API: Получение списка фотографов (сортировка по рейтингу, при равенстве — случайный порядок)
+app.get('/api/photographers', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM photographers ORDER BY rating DESC, RANDOM()');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Ошибка при получении списка фотографов:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
 
-h2 {
-    font-size: 18px;
-    margin: 5px 0;
-}
-
-p {
-    margin: 5px 0;
-    font-size: 14px;
-    color: #666;
-}
-
-/* Рейтинг (звёзды) */
-.rating {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.star {
-    width: 24px;
-    height: 24px;
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.star.full {
-    background-image: url('/images/full-star.png');
-}
-
-.star.half {
-    background-image: url('/images/half-star.png');
-}
-
-.star.empty {
-    background-image: url('/images/empty-star.png');
-}
-
-.rating-number {
-    font-size: 14px;
-    color: #333;
-    margin-left: 5px;
-}
+// 📌 Запуск сервера
+app.listen(PORT, () => {
+    console.log(`✅ Сервер запущен на порту ${PORT}`);
+});

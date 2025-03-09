@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <p class="rating">${stars} ${numericRating}</p>
+                        <div class="rating">${stars} ${numericRating}</div>
                     </div>
                 `;
 
@@ -46,11 +46,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// 🔥 Функция для генерации звёздочек по рейтингу
+// 🔥 Функция для генерации звёздочек с половинками
 function generateStars(rating) {
-    const fullStar = "⭐"; // Полная звезда
-    const emptyStar = "☆"; // Пустая звезда
-    const roundedRating = Math.round(rating); // Округляем рейтинг
+    let starsHTML = "";
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
-    return fullStar.repeat(roundedRating) + emptyStar.repeat(5 - roundedRating);
+    for (let i = 0; i < fullStars; i++) {
+        starsHTML += '<span class="star full"></span>';
+    }
+
+    if (hasHalfStar) {
+        starsHTML += '<span class="star half"></span>';
+    }
+
+    for (let i = 0; i < emptyStars; i++) {
+        starsHTML += '<span class="star empty"></span>';
+    }
+
+    return starsHTML;
 }
