@@ -49,68 +49,47 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const nextBtn = photographerElement.querySelector(".next-btn");
 
                 let isDragging = false;
-                let startX, scrollLeft, velocity = 0, momentumID;
+                let startX, scrollLeft;
 
                 // Отключаем pointer-events для изображений, чтобы тянуть проще
                 carousel.querySelectorAll("img").forEach(img => {
                     img.style.pointerEvents = "none";
                 });
 
-                // Начало перетаскивания
+                // Начало перетаскивания (momentum отключен)
                 carousel.addEventListener("mousedown", (e) => {
                     isDragging = true;
-                    startX = e.pageX - carousel.offsetLeft;
+                    startX = e.clientX;
                     scrollLeft = carousel.scrollLeft;
-                    velocity = 0;
-                    cancelMomentumTracking();
+                    carousel.style.scrollBehavior = "auto"; // Отключаем плавность, чтобы ускорить
                     e.preventDefault();
-                }, { passive: false });
+                });
 
                 // Движение мыши
                 carousel.addEventListener("mousemove", (e) => {
                     if (!isDragging) return;
-                    const x = e.pageX - carousel.offsetLeft;
-                    const walk = (x - startX) * 1.5; // 🔥 Снижен коэффициент (1.5 вместо 2)
-                    carousel.scrollLeft = scrollLeft - walk;
-                    velocity = walk * 0.1; // 🔥 Запоминаем скорость движения
+                    const deltaX = e.clientX - startX;
+                    carousel.scrollLeft = scrollLeft - deltaX;
                 });
 
-                // Окончание перетаскивания (включаем инерцию)
+                // Окончание перетаскивания
                 carousel.addEventListener("mouseup", () => {
                     isDragging = false;
-                    startMomentumTracking();
+                    carousel.style.scrollBehavior = "smooth"; // Включаем плавность после отпускания
                 });
 
                 carousel.addEventListener("mouseleave", () => {
                     isDragging = false;
-                    startMomentumTracking();
+                    carousel.style.scrollBehavior = "smooth";
                 });
 
-                // Функция инерции прокрутки
-                function startMomentumTracking() {
-                    cancelMomentumTracking();
-                    momentumID = requestAnimationFrame(momentumLoop);
-                }
-
-                function cancelMomentumTracking() {
-                    cancelAnimationFrame(momentumID);
-                }
-
-                function momentumLoop() {
-                    carousel.scrollLeft += velocity;
-                    velocity *= 0.95; // 🔥 Постепенное замедление инерции
-                    if (Math.abs(velocity) > 0.5) {
-                        momentumID = requestAnimationFrame(momentumLoop);
-                    }
-                }
-
-                // Прокрутка кнопками
+                // Прокрутка кнопками (оставляем)
                 prevBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: -120, behavior: "smooth" });
+                    carousel.scrollBy({ left: -100, behavior: "smooth" });
                 });
 
                 nextBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: 120, behavior: "smooth" });
+                    carousel.scrollBy({ left: 100, behavior: "smooth" });
                 });
             });
         }
