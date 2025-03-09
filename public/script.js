@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем функционал модального окна
+            setupDrag();
             setupModal();
         }
     } catch (error) {
@@ -74,7 +74,40 @@ function generatePortfolio(images) {
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Функция открытия изображений в модальном окне
+// 📌 Функция Drag&Drop для портфолио
+function setupDrag() {
+    document.querySelectorAll(".portfolio").forEach(portfolio => {
+        let isDown = false;
+        let startX, scrollLeft;
+
+        portfolio.addEventListener("mousedown", (e) => {
+            isDown = true;
+            startX = e.pageX - portfolio.offsetLeft;
+            scrollLeft = portfolio.scrollLeft;
+            portfolio.style.cursor = "grabbing";
+        });
+
+        portfolio.addEventListener("mouseleave", () => {
+            isDown = false;
+            portfolio.style.cursor = "grab";
+        });
+
+        portfolio.addEventListener("mouseup", () => {
+            isDown = false;
+            portfolio.style.cursor = "grab";
+        });
+
+        portfolio.addEventListener("mousemove", (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - portfolio.offsetLeft;
+            const walk = (x - startX) * 2;
+            portfolio.scrollLeft = scrollLeft - walk;
+        });
+    });
+}
+
+// 📌 Функция модального окна с зумом
 function setupModal() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
@@ -95,9 +128,7 @@ function setupModal() {
         modal.style.display = "none";
     });
 
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.style.display = "none";
-        }
+    modalImg.addEventListener("click", () => {
+        modalImg.classList.toggle("zoom");
     });
 }

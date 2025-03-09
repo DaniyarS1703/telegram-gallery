@@ -40,15 +40,15 @@ body {
 }
 
 .star.full {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/4d/Gold_Star.svg');
+    background-image: url('images/full_star.png'); /* Локальный путь */
 }
 
 .star.half {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/2d/Gold_Star_Half.svg');
+    background-image: url('images/half_star.png'); /* Локальный путь */
 }
 
 .star.empty {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/29/Gold_Star_Empty.svg');
+    background-image: url('images/empty_star.png'); /* Локальный путь */
 }
 
 /* 📌 Портфолио */
@@ -58,6 +58,12 @@ body {
     overflow-x: auto;
     padding: 10px 0;
     margin-top: 10px;
+    scroll-behavior: smooth;
+    cursor: grab;
+}
+
+.portfolio:active {
+    cursor: grabbing;
 }
 
 .portfolio-img {
@@ -92,6 +98,12 @@ body {
     width: 100%;
     height: auto;
     border-radius: 10px;
+    transform-origin: center;
+    transition: transform 0.3s ease;
+}
+
+.modal-content img.zoom {
+    transform: scale(2);
 }
 
 .close {
