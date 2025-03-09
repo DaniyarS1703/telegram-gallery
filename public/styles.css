@@ -1,78 +1,101 @@
+/* Общие стили */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
+    background-color: #f5f5f5;
 }
 
+/* Контейнер главного блока */
 .container {
     max-width: 600px;
-    margin: 20px auto;
+    margin: auto;
     padding: 20px;
     background-color: white;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Заголовок */
 h1 {
     text-align: center;
-    font-size: 24px;
+    font-size: 22px;
 }
 
+/* Карточка фотографа */
 .photographer {
-    border-bottom: 1px solid #ddd;
-    padding: 15px 0;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.photographer:last-child {
-    border-bottom: none;
-}
-
-.photographer-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.avatar {
-    width: 120px; /* уменьшили размер аватарки */
-    height: 120px;
+.photographer img.avatar {
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #007bff;
+    display: block;
+    margin: 0 auto 10px;
 }
 
-.rating {
-    display: flex;
-    justify-content: center;
+/* Имя фотографа */
+.photographer h2 {
+    text-align: center;
+    font-size: 18px;
     margin: 5px 0;
+}
+
+/* Описание фотографа */
+.photographer p {
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    margin: 5px 0;
+}
+
+/* Секция рейтинга */
+.rating {
+    text-align: center;
+    margin-top: 5px;
 }
 
 .star {
     font-size: 20px;
-    color: #ffd700;
+    color: gold;
+    display: inline-block;
 }
 
 .half-star {
-    position: relative;
     font-size: 20px;
-    color: #ddd;
+    color: gold;
+    display: inline-block;
+    position: relative;
 }
 
 .half-star::before {
     content: "★";
     position: absolute;
+    left: 0;
     width: 50%;
     overflow: hidden;
-    color: #ffd700;
+    color: gold;
+}
+
+/* Карусель портфолио */
+.carousel-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
 }
 
 .carousel {
     display: flex;
     overflow-x: auto;
     scroll-behavior: smooth;
-    width: 100%;
+    width: 80%;
     padding: 10px 0;
 }
 
@@ -91,4 +114,37 @@ h1 {
 .carousel::-webkit-scrollbar-thumb {
     background: #007bff;
     border-radius: 10px;
+}
+
+/* Кнопки прокрутки */
+.prev-btn, .next-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    margin: 0 5px;
+}
+
+.prev-btn:hover, .next-btn:hover {
+    background: #0056b3;
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media (max-width: 480px) {
+    .photographer img.avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .star, .half-star {
+        font-size: 18px;
+    }
+
+    .carousel img {
+        width: 70px;
+        height: 70px;
+    }
 }

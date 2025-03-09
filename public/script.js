@@ -41,8 +41,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 let portfolioHTML = "";
                 if (photographer.portfolio && photographer.portfolio.length > 0) {
                     portfolioHTML = `
-                        <div class="carousel">
-                            ${photographer.portfolio.map(img => `<img src="${img}" alt="Фото из портфолио">`).join("")}
+                        <div class="carousel-container">
+                            <button class="prev-btn">◀️</button>
+                            <div class="carousel">
+                                ${photographer.portfolio.map(img => `<img src="${img}" alt="Фото из портфолио">`).join("")}
+                            </div>
+                            <button class="next-btn">▶️</button>
                         </div>
                     `;
                 }
@@ -58,6 +62,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
 
                 photographersList.appendChild(photographerElement);
+            });
+
+            // Добавляем логику кнопок "◀️" и "▶️"
+            document.querySelectorAll(".carousel-container").forEach(container => {
+                const carousel = container.querySelector(".carousel");
+                const prevBtn = container.querySelector(".prev-btn");
+                const nextBtn = container.querySelector(".next-btn");
+
+                prevBtn.addEventListener("click", () => {
+                    carousel.scrollBy({ left: -100, behavior: "smooth" });
+                });
+
+                nextBtn.addEventListener("click", () => {
+                    carousel.scrollBy({ left: 100, behavior: "smooth" });
+                });
             });
         }
     } catch (error) {
