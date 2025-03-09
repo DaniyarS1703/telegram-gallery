@@ -17,8 +17,10 @@ body {
     display: inline-block;
     width: 280px;
     text-align: center;
+    position: relative;
 }
 
+/* 📌 Аватарки */
 .photographer-card img.avatar {
     width: 80px;
     height: 80px;
@@ -29,6 +31,7 @@ body {
 .rating {
     display: flex;
     justify-content: center;
+    align-items: center;
     margin-top: 5px;
 }
 
@@ -50,6 +53,32 @@ body {
 
 .star.empty {
     background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/29/Gold_Star_Empty.svg');
+}
+
+/* 📌 Контейнер портфолио */
+.portfolio {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px;
+    margin-top: 10px;
+    max-width: 95%;
+    white-space: nowrap;
+    border-radius: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #888 transparent;
+}
+
+/* 📌 Изображения портфолио */
+.portfolio img {
+    height: 120px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.portfolio img:hover {
+    transform: scale(1.05);
 }
 
 /* 📌 Модальное окно */
@@ -80,6 +109,7 @@ body {
     transition: transform 0.2s ease-in-out;
 }
 
+/* 📌 Кнопка закрытия модального окна */
 .close {
     position: absolute;
     top: 10px;
