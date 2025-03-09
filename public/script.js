@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем функционал модального окна
+            // 📌 Подключаем функционал модального окна с увеличением
             setupModal();
         }
     } catch (error) {
@@ -74,7 +74,7 @@ function generatePortfolio(images) {
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Функция открытия изображений в модальном окне
+// 📌 Функция модального окна с увеличением
 function setupModal() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
@@ -99,5 +99,35 @@ function setupModal() {
         if (e.target === modal) {
             modal.style.display = "none";
         }
+    });
+
+    // 📌 Добавляем увеличение при касании на мобильных устройствах
+    let scale = 1;
+    let startX = 0;
+    let startY = 0;
+    let isPanning = false;
+
+    modalImg.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        scale += e.deltaY * -0.01;
+        scale = Math.min(Math.max(1, scale), 3);
+        modalImg.style.transform = `scale(${scale})`;
+    });
+
+    modalImg.addEventListener("mousedown", (e) => {
+        isPanning = true;
+        startX = e.clientX - modalImg.offsetLeft;
+        startY = e.clientY - modalImg.offsetTop;
+    });
+
+    modalImg.addEventListener("mouseup", () => {
+        isPanning = false;
+    });
+
+    modalImg.addEventListener("mousemove", (e) => {
+        if (!isPanning) return;
+        e.preventDefault();
+        modalImg.style.left = `${e.clientX - startX}px`;
+        modalImg.style.top = `${e.clientY - startY}px`;
     });
 }
