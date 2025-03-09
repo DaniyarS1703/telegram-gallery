@@ -180,3 +180,31 @@ h1 {
         font-size: 12px;
     }
 }
+
+/* Стили для звезд рейтинга */
+.rating {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.star {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+}
+
+.star.full {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/4d/Gold_Star.svg'); /* Полная звезда */
+}
+
+.star.half {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/2d/Gold_Star_Half.svg'); /* Половинка звезды */
+}
+
+.star.empty {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/29/Gold_Star_Empty.svg'); /* Пустая звезда */
+}
