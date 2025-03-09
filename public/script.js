@@ -9,15 +9,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     photographersList.innerHTML = "<p>Загрузка фотографов...</p>";
 
     try {
-        const response = await fetch("/api/photographers");
+        const response = await fetch("https://telegram-gallery.onrender.com/api/photographers");
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
-        let photographers = await response.json();
-
-        // 📌 Сортируем по рейтингу (если рейтинг одинаковый, случайный порядок)
-        photographers.sort((a, b) => b.rating - a.rating || Math.random() - 0.5);
+        const photographers = await response.json();
 
         if (photographers.length === 0) {
             photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
@@ -27,19 +24,27 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
 
-                // Генерация звёзд рейтинга
-                const fullStars = Math.floor(photographer.rating);
-                const halfStar = photographer.rating % 1 !== 0;
-                
+                const rating = Math.floor(photographer.rating);
+                const hasHalfStar = photographer.rating % 1 !== 0;
+
                 let starsHTML = "";
-                for (let i = 0; i < fullStars; i++) {
-                    starsHTML += '<span class="star full">⭐</span>';
+                for (let i = 0; i < rating; i++) {
+                    starsHTML += '<span class="star">★</span>';
                 }
-                if (halfStar) {
-                    starsHTML += '<span class="star half">⭐</span>';
+                if (hasHalfStar) {
+                    starsHTML += '<span class="half-star">★</span>';
                 }
-                for (let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) {
-                    starsHTML += '<span class="star empty">⭐</span>';
+                while (starsHTML.length < 5) {
+                    starsHTML += '<span class="star" style="color: #ddd;">★</span>';
+                }
+
+                let portfolioHTML = "";
+                if (photographer.portfolio && photographer.portfolio.length > 0) {
+                    portfolioHTML = `
+                        <div class="carousel">
+                            ${photographer.portfolio.map(img => `<img src="${img}" alt="Фото из портфолио">`).join("")}
+                        </div>
+                    `;
                 }
 
                 photographerElement.innerHTML = `
@@ -47,10 +52,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <div class="rating-container">
-                            <span class="rating-text">${photographer.rating.toFixed(1)}</span>
-                            <div class="rating">${starsHTML}</div>
-                        </div>
+                        <div class="rating">${starsHTML}</div>
+                        ${portfolioHTML}
                     </div>
                 `;
 
