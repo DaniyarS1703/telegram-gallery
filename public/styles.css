@@ -83,27 +83,30 @@ h1 {
     color: gold;
 }
 
-/* Карусель портфолио */
+/* 📌 Карусель портфолио (шире, почти до краёв) */
 .carousel-container {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 10px;
     position: relative;
+    width: 100%;
 }
 
+/* 📌 Карусель теперь шире */
 .carousel {
     display: flex;
     overflow-x: auto;
     scroll-behavior: smooth;
-    width: 75%;
+    width: 90%;
     padding: 10px 0;
+    white-space: nowrap;
 }
 
 .carousel img {
-    width: 75px;
-    height: 75px;
-    margin-right: 5px;
+    width: 100px; /* Сделал изображения больше */
+    height: 100px;
+    margin-right: 8px;
     border-radius: 5px;
     object-fit: cover;
 }
@@ -117,22 +120,22 @@ h1 {
     border-radius: 10px;
 }
 
-/* 🔘 Улучшенные кнопки прокрутки (скрыты по умолчанию) */
+/* 🔘 Улучшенные кнопки прокрутки (скрыты по умолчанию, поверх картинок) */
 .prev-btn, .next-btn {
     background: rgba(0, 123, 255, 0.7); /* Полупрозрачность */
     color: white;
     border: none;
-    padding: 8px 10px;
     cursor: pointer;
     font-size: 14px;
-    border-radius: 8px;
-    width: 32px; /* Уже */
-    height: 38px; /* Выше */
+    border-radius: 10px;
+    width: 40px; /* Кнопки стали шире */
+    height: 28px; /* Кнопки стали тоньше */
     transition: all 0.3s ease-in-out;
     opacity: 0; /* Скрываем кнопки */
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 2; /* Подняли кнопки поверх изображений */
 }
 
 .prev-btn {
@@ -167,13 +170,13 @@ h1 {
     }
 
     .carousel img {
-        width: 70px;
-        height: 70px;
+        width: 90px;
+        height: 90px;
     }
 
     .prev-btn, .next-btn {
-        width: 28px;
-        height: 34px;
+        width: 36px;
+        height: 26px;
         font-size: 12px;
     }
 }
