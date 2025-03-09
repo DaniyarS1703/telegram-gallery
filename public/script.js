@@ -98,3 +98,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         photographersList.innerHTML = "<p>Ошибка загрузки данных.</p>";
     }
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const portfolioImages = document.querySelectorAll(".portfolio img");
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Просмотр изображения"></div>`;
+    document.body.appendChild(modal);
+
+    const modalImg = modal.querySelector("img");
+    const closeModal = modal.querySelector(".close");
+
+    portfolioImages.forEach(img => {
+        img.addEventListener("click", () => {
+            modal.style.display = "flex";
+            modalImg.src = img.src;
+        });
+    });
+
+    closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+});
