@@ -43,46 +43,74 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 photographersList.appendChild(photographerElement);
 
-                // Добавляем функциональность карусели
+                // Оптимизированная карусель
                 const carousel = document.getElementById(`carousel-${photographer.id}`);
                 const prevBtn = photographerElement.querySelector(".prev-btn");
                 const nextBtn = photographerElement.querySelector(".next-btn");
 
                 let isDragging = false;
-                let startX, scrollLeft;
+                let startX, scrollLeft, velocity = 0, momentumID;
+
+                // Отключаем pointer-events для изображений, чтобы тянуть проще
+                carousel.querySelectorAll("img").forEach(img => {
+                    img.style.pointerEvents = "none";
+                });
 
                 // Начало перетаскивания
                 carousel.addEventListener("mousedown", (e) => {
                     isDragging = true;
                     startX = e.pageX - carousel.offsetLeft;
                     scrollLeft = carousel.scrollLeft;
-                    e.preventDefault(); // Отключаем выделение текста
-                });
+                    velocity = 0;
+                    cancelMomentumTracking();
+                    e.preventDefault();
+                }, { passive: false });
 
                 // Движение мыши
                 carousel.addEventListener("mousemove", (e) => {
                     if (!isDragging) return;
                     const x = e.pageX - carousel.offsetLeft;
-                    const walk = (x - startX) * 2; // Ускоряем прокрутку
+                    const walk = (x - startX) * 1.5; // 🔥 Снижен коэффициент (1.5 вместо 2)
                     carousel.scrollLeft = scrollLeft - walk;
+                    velocity = walk * 0.1; // 🔥 Запоминаем скорость движения
                 });
 
-                // Окончание перетаскивания
+                // Окончание перетаскивания (включаем инерцию)
                 carousel.addEventListener("mouseup", () => {
                     isDragging = false;
+                    startMomentumTracking();
                 });
 
                 carousel.addEventListener("mouseleave", () => {
                     isDragging = false;
+                    startMomentumTracking();
                 });
+
+                // Функция инерции прокрутки
+                function startMomentumTracking() {
+                    cancelMomentumTracking();
+                    momentumID = requestAnimationFrame(momentumLoop);
+                }
+
+                function cancelMomentumTracking() {
+                    cancelAnimationFrame(momentumID);
+                }
+
+                function momentumLoop() {
+                    carousel.scrollLeft += velocity;
+                    velocity *= 0.95; // 🔥 Постепенное замедление инерции
+                    if (Math.abs(velocity) > 0.5) {
+                        momentumID = requestAnimationFrame(momentumLoop);
+                    }
+                }
 
                 // Прокрутка кнопками
                 prevBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: -100, behavior: "smooth" });
+                    carousel.scrollBy({ left: -120, behavior: "smooth" });
                 });
 
                 nextBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: 100, behavior: "smooth" });
+                    carousel.scrollBy({ left: 120, behavior: "smooth" });
                 });
             });
         }
