@@ -33,7 +33,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <div class="portfolio-container">
                             <button class="carousel-btn left-btn">‹</button>
                             <div class="portfolio">
-                                ${photographer.portfolio.map((img) => `<img src="${img}" class="portfolio-img" onclick="openModal('${img}')">`).join("")}
+                                ${photographer.portfolio.map((img) => 
+                                    `<img src="${img}" class="portfolio-img" onclick="openModal('${img}')">`
+                                ).join("")}
                             </div>
                             <button class="carousel-btn right-btn">›</button>
                         </div>
@@ -81,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     if (!isDragging) return;
                     event.preventDefault();
                     const x = event.pageX - portfolio.offsetLeft;
-                    const walk = (x - startX); // Убираем инерцию
+                    const walk = (x - startX);
                     portfolio.scrollLeft = scrollLeft - walk;
                 });
             });
@@ -92,15 +94,60 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Функция для модального окна
+// Функция для модального окна с масштабированием
 function openModal(imageSrc) {
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modal-img");
+    const modalOverlay = document.getElementById("modal-overlay");
+
     modal.style.display = "flex";
     modalImg.src = imageSrc;
+
+    // Добавляем возможность зума (увеличения)
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+
+    function updateTransform() {
+        modalImg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+    }
+
+    modalImg.onwheel = (event) => {
+        event.preventDefault();
+        const zoomFactor = 0.1;
+        scale += event.deltaY > 0 ? -zoomFactor : zoomFactor;
+        scale = Math.min(Math.max(1, scale), 3);
+        updateTransform();
+    };
+
+    let isDragging = false;
+    let startX, startY;
+
+    modalImg.onmousedown = (event) => {
+        isDragging = true;
+        startX = event.clientX - translateX;
+        startY = event.clientY - translateY;
+    };
+
+    modalImg.onmousemove = (event) => {
+        if (!isDragging) return;
+        translateX = event.clientX - startX;
+        translateY = event.clientY - startY;
+        updateTransform();
+    };
+
+    modalImg.onmouseup = () => {
+        isDragging = false;
+    };
+
+    modalImg.onmouseleave = () => {
+        isDragging = false;
+    };
+
+    modalOverlay.onclick = closeModal;
 }
 
-// Закрытие модального окна
+// Функция для закрытия модального окна
 function closeModal() {
     document.getElementById("modal").style.display = "none";
 }
