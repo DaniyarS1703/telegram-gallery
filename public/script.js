@@ -16,189 +16,99 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let photographers = await response.json();
 
-        // 📌 Сортировка по рейтингу (если одинаковый – случайное расположение)
-        photographers.sort((a, b) => {
-            if (b.rating === a.rating) return Math.random() - 0.5;
-            return b.rating - a.rating;
+        // 📌 Сортировка по рейтингу (если равны, порядок случайный)
+        photographers.sort((a, b) => b.rating - a.rating || Math.random() - 0.5);
+
+        photographersList.innerHTML = "";
+        photographers.forEach((photographer) => {
+            const photographerElement = document.createElement("div");
+            photographerElement.classList.add("photographer");
+
+            // Генерация звезд
+            let stars = "";
+            let fullStars = Math.floor(photographer.rating);
+            let halfStar = photographer.rating % 1 >= 0.5 ? 1 : 0;
+            let emptyStars = 5 - (fullStars + halfStar);
+
+            stars += "★".repeat(fullStars);
+            stars += halfStar ? "☆" : "";
+            stars += "☆".repeat(emptyStars);
+
+            // Карточка фотографа
+            photographerElement.innerHTML = `
+                <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
+                <h2>${photographer.name}</h2>
+                <p>${photographer.bio || "Описание отсутствует"}</p>
+                <div class="rating">${stars}</div>
+                <div class="portfolio-container">
+                    <button class="carousel-btn left"><</button>
+                    <div class="portfolio">${photographer.portfolio.map(img => `<img src="${img}" class="portfolio-img">`).join("")}</div>
+                    <button class="carousel-btn right">></button>
+                </div>
+            `;
+
+            photographersList.appendChild(photographerElement);
         });
 
-        if (photographers.length === 0) {
-            photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
-        } else {
-            photographersList.innerHTML = "";
-            photographers.forEach((photographer) => {
-                const photographerElement = document.createElement("div");
-                photographerElement.classList.add("photographer");
+        // Обработчики для прокрутки портфолио
+        document.querySelectorAll(".portfolio-container").forEach(container => {
+            const leftBtn = container.querySelector(".carousel-btn.left");
+            const rightBtn = container.querySelector(".carousel-btn.right");
+            const portfolio = container.querySelector(".portfolio");
 
-                photographerElement.innerHTML = `
-                    <div class="photographer-card">
-                        <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
-                        <h2>${photographer.name}</h2>
-                        <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <div class="rating-container">
-                            <span class="rating-number">${photographer.rating.toFixed(1)}</span>
-                            <div class="rating">${generateStars(photographer.rating)}</div>
-                        </div>
-                        <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
-                    </div>
-                `;
-
-                photographersList.appendChild(photographerElement);
+            leftBtn.addEventListener("click", () => {
+                portfolio.scrollBy({ left: -200, behavior: "smooth" });
             });
 
-            // 📌 Подключаем drag & scroll (ТВОЙ вариант)
-            setupStableDrag();
+            rightBtn.addEventListener("click", () => {
+                portfolio.scrollBy({ left: 200, behavior: "smooth" });
+            });
 
-            // 📌 Подключаем функционал модального окна с увеличением и листанием
-            setupModal();
-        }
+            // Drag & Scroll
+            let isDown = false;
+            let startX, scrollLeft;
+
+            portfolio.addEventListener("mousedown", (e) => {
+                isDown = true;
+                startX = e.pageX - portfolio.offsetLeft;
+                scrollLeft = portfolio.scrollLeft;
+            });
+
+            portfolio.addEventListener("mouseleave", () => isDown = false);
+            portfolio.addEventListener("mouseup", () => isDown = false);
+
+            portfolio.addEventListener("mousemove", (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - portfolio.offsetLeft;
+                const walk = (x - startX) * 2;
+                portfolio.scrollLeft = scrollLeft - walk;
+            });
+        });
+
+        // Модальное окно
+        const modal = document.createElement("div");
+        modal.classList.add("modal");
+        modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Фото"></div>`;
+        document.body.appendChild(modal);
+
+        const modalImg = modal.querySelector("img");
+        const closeModal = modal.querySelector(".close");
+
+        document.querySelectorAll(".portfolio-img").forEach(img => {
+            img.addEventListener("click", () => {
+                modal.style.display = "flex";
+                modalImg.src = img.src;
+            });
+        });
+
+        closeModal.addEventListener("click", () => modal.style.display = "none");
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.style.display = "none";
+        });
+
     } catch (error) {
         console.error("Ошибка загрузки фотографов:", error);
         photographersList.innerHTML = "<p>Ошибка загрузки данных.</p>";
     }
 });
-
-// 📌 Функция генерации звезд рейтинга
-function generateStars(rating) {
-    let starsHTML = "";
-    for (let i = 1; i <= 5; i++) {
-        if (i <= Math.floor(rating)) {
-            starsHTML += `<span class="star full"></span>`; // Полная звезда
-        } else if (i - rating < 1) {
-            starsHTML += `<span class="star half"></span>`; // Половина звезды
-        } else {
-            starsHTML += `<span class="star empty"></span>`; // Пустая звезда
-        }
-    }
-    return starsHTML;
-}
-
-// 📌 Функция генерации изображений портфолио
-function generatePortfolio(images) {
-    if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
-
-    return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
-}
-
-// 📌 **Оптимизированный Drag & Scroll (ТВОЙ ВАРИАНТ)**
-function setupStableDrag() {
-    document.querySelectorAll(".portfolio").forEach(portfolio => {
-        let isDown = false;
-        let startX, scrollLeft;
-
-        portfolio.addEventListener("mousedown", (e) => {
-            isDown = true;
-            startX = e.pageX - portfolio.offsetLeft;
-            scrollLeft = portfolio.scrollLeft;
-            portfolio.classList.add("active");
-        });
-
-        portfolio.addEventListener("mouseleave", () => {
-            isDown = false;
-            portfolio.classList.remove("active");
-        });
-
-        portfolio.addEventListener("mouseup", () => {
-            isDown = false;
-            portfolio.classList.remove("active");
-        });
-
-        portfolio.addEventListener("mousemove", (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - portfolio.offsetLeft;
-            const walk = (x - startX) * 2; // Скорость прокрутки
-            portfolio.scrollLeft = scrollLeft - walk;
-        });
-    });
-}
-
-// 📌 Улучшенное модальное окно с зумом + перемещением + листанием стрелками
-function setupModal() {
-    const modal = document.createElement("div");
-    modal.classList.add("modal");
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <img src="" alt="Просмотр" class="modal-img">
-            <button class="modal-prev">&#9664;</button>
-            <button class="modal-next">&#9654;</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-
-    const modalImg = modal.querySelector(".modal-img");
-    const closeModal = modal.querySelector(".close");
-    const prevBtn = modal.querySelector(".modal-prev");
-    const nextBtn = modal.querySelector(".modal-next");
-
-    let currentImages = [];
-    let currentIndex = 0;
-
-    document.querySelectorAll(".portfolio-img").forEach((img, index, array) => {
-        img.addEventListener("click", () => {
-            currentImages = array;
-            currentIndex = index;
-            modal.style.display = "flex";
-            updateModalImage();
-        });
-    });
-
-    function updateModalImage() {
-        modalImg.src = currentImages[currentIndex].src;
-        prevBtn.style.display = currentIndex === 0 ? "none" : "block";
-        nextBtn.style.display = currentIndex === currentImages.length - 1 ? "none" : "block";
-    }
-
-    prevBtn.addEventListener("click", () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            updateModalImage();
-        }
-    });
-
-    nextBtn.addEventListener("click", () => {
-        if (currentIndex < currentImages.length - 1) {
-            currentIndex++;
-            updateModalImage();
-        }
-    });
-
-    closeModal.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
-
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.style.display = "none";
-        }
-    });
-
-    // 📌 Улучшенный зум (движение + увеличение)
-    modalImg.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        let scale = Math.min(Math.max(1, modalImg.width * 0.001 + e.deltaY * -0.01), 3);
-        modalImg.style.transform = `scale(${scale})`;
-        modalImg.style.cursor = "grab";
-    });
-
-    modalImg.addEventListener("mousedown", (e) => {
-        let startX = e.clientX;
-        let startY = e.clientY;
-        let originX = modalImg.offsetLeft;
-        let originY = modalImg.offsetTop;
-
-        function moveHandler(event) {
-            modalImg.style.left = `${originX + (event.clientX - startX)}px`;
-            modalImg.style.top = `${originY + (event.clientY - startY)}px`;
-        }
-
-        function upHandler() {
-            document.removeEventListener("mousemove", moveHandler);
-            document.removeEventListener("mouseup", upHandler);
-        }
-
-        document.addEventListener("mousemove", moveHandler);
-        document.addEventListener("mouseup", upHandler);
-    });
-}

@@ -1,46 +1,147 @@
-/* Улучшенный стиль карусели */
+/* Общие стили */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* Контейнер фотографов */
+.photographer {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Аватар фотографа */
+.photographer .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Имя фотографа */
+.photographer h2 {
+    font-size: 22px;
+    margin-top: 10px;
+}
+
+/* Описание фотографа */
+.photographer p {
+    color: #555;
+    margin: 10px 0;
+}
+
+/* Рейтинг (звезды) */
+.rating {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+.rating .star {
+    color: gold;
+    margin: 0 2px;
+}
+
+/* Карусель портфолио */
 .portfolio {
     display: flex;
     overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: 12px; /* Увеличенный отступ между изображениями */
-    padding: 10px; /* Отступы, чтобы картинки не прилипали к краям */
+    padding: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #007bff #e0e0e0;
 }
 
+/* Изображения в карусели */
 .portfolio img {
-    max-width: 140px; /* Оптимальный размер фото */
-    height: auto;
-    border-radius: 10px; /* Закругленные углы */
-    cursor: pointer;
-    transition: transform 0.3s ease;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 10px;
+    transition: transform 0.3s ease-in-out;
 }
 
+/* Увеличение при наведении */
 .portfolio img:hover {
-    transform: scale(1.05); /* Чуть увеличивается при наведении */
+    transform: scale(1.1);
 }
 
-/* Улучшенные кнопки навигации */
-.modal-prev, .modal-next {
+/* Навигационные кнопки */
+.carousel-btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
+    background: rgba(0, 0, 0, 0.5);
     border: none;
-    padding: 10px 15px;
+    color: white;
+    font-size: 18px;
+    padding: 10px;
     cursor: pointer;
-    font-size: 24px;
-    transition: background 0.3s ease;
+    border-radius: 50%;
+    transition: background 0.3s;
+    z-index: 10;
 }
 
-.modal-prev:hover, .modal-next:hover {
+.carousel-btn:hover {
     background: rgba(0, 0, 0, 0.8);
 }
 
-.modal-prev {
+.carousel-btn.left {
     left: 10px;
 }
 
-.modal-next {
+.carousel-btn.right {
     right: 10px;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    max-width: 80%;
+    max-height: 80%;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+}
+
+.modal img {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+/* Кнопка закрытия */
+.modal .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    color: white;
+}
+
+.modal .close:hover {
+    color: red;
 }
