@@ -1,8 +1,22 @@
+/* Общие стили */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     text-align: center;
 }
 
@@ -10,51 +24,68 @@ h1 {
     color: #333;
 }
 
-#photographers {
+/* Карточки фотографов */
+.photographer {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
+    align-items: center;
+    background: #ffffff;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.photographer img.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 10px;
 }
 
 .photographer-card {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 250px;
-    text-align: center;
+    flex: 1;
+    text-align: left;
 }
 
-.photographer-card img.avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
-
-.photographer-card h2 {
-    font-size: 20px;
-    margin: 10px 0;
-    color: #333;
-}
-
-.photographer-card p {
-    font-size: 16px;
-    color: #666;
+h2 {
+    font-size: 18px;
     margin: 5px 0;
 }
 
+p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Рейтинг (звёзды) */
 .rating {
-    font-size: 18px;
-    font-weight: bold;
-    color: #ffcc00; /* Жёлтый цвет для звёзд */
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.star {
+    width: 24px;
+    height: 24px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.star.full {
+    background-image: url('/images/full-star.png');
+}
+
+.star.half {
+    background-image: url('/images/half-star.png');
+}
+
+.star.empty {
+    background-image: url('/images/empty-star.png');
 }
 
 .rating-number {
-    font-size: 16px;
-    color: #333; /* Серый цвет для числового рейтинга */
+    font-size: 14px;
+    color: #333;
     margin-left: 5px;
 }
