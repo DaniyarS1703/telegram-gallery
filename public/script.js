@@ -24,52 +24,59 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
 
-                const rating = Math.floor(photographer.rating);
-                const hasHalfStar = photographer.rating % 1 !== 0;
-
-                let starsHTML = "";
-                for (let i = 0; i < rating; i++) {
-                    starsHTML += '<span class="star">★</span>';
-                }
-                if (hasHalfStar) {
-                    starsHTML += '<span class="half-star">★</span>';
-                }
-                while (starsHTML.length < 5) {
-                    starsHTML += '<span class="star" style="color: #ddd;">★</span>';
-                }
-
-                let portfolioHTML = "";
-                if (photographer.portfolio && photographer.portfolio.length > 0) {
-                    portfolioHTML = `
-                        <div class="carousel-container">
-                            <button class="prev-btn">◀️</button>
-                            <div class="carousel">
-                                ${photographer.portfolio.map(img => `<img src="${img}" alt="Фото из портфолио">`).join("")}
-                            </div>
-                            <button class="next-btn">▶️</button>
-                        </div>
-                    `;
-                }
-
+                // Создаем HTML карточки фотографа
                 photographerElement.innerHTML = `
                     <div class="photographer-card">
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <div class="rating">${starsHTML}</div>
-                        ${portfolioHTML}
+                        <p>⭐ ${photographer.rating}</p>
+                        <div class="carousel-container">
+                            <button class="prev-btn">&lt;</button>
+                            <div class="carousel" id="carousel-${photographer.id}">
+                                ${photographer.portfolio.map(img => `<img src="${img}" alt="Portfolio">`).join('')}
+                            </div>
+                            <button class="next-btn">&gt;</button>
+                        </div>
                     </div>
                 `;
 
                 photographersList.appendChild(photographerElement);
-            });
 
-            // Добавляем логику кнопок "◀️" и "▶️"
-            document.querySelectorAll(".carousel-container").forEach(container => {
-                const carousel = container.querySelector(".carousel");
-                const prevBtn = container.querySelector(".prev-btn");
-                const nextBtn = container.querySelector(".next-btn");
+                // Добавляем функциональность карусели
+                const carousel = document.getElementById(`carousel-${photographer.id}`);
+                const prevBtn = photographerElement.querySelector(".prev-btn");
+                const nextBtn = photographerElement.querySelector(".next-btn");
 
+                let isDragging = false;
+                let startX, scrollLeft;
+
+                // Начало перетаскивания
+                carousel.addEventListener("mousedown", (e) => {
+                    isDragging = true;
+                    startX = e.pageX - carousel.offsetLeft;
+                    scrollLeft = carousel.scrollLeft;
+                    e.preventDefault(); // Отключаем выделение текста
+                });
+
+                // Движение мыши
+                carousel.addEventListener("mousemove", (e) => {
+                    if (!isDragging) return;
+                    const x = e.pageX - carousel.offsetLeft;
+                    const walk = (x - startX) * 2; // Ускоряем прокрутку
+                    carousel.scrollLeft = scrollLeft - walk;
+                });
+
+                // Окончание перетаскивания
+                carousel.addEventListener("mouseup", () => {
+                    isDragging = false;
+                });
+
+                carousel.addEventListener("mouseleave", () => {
+                    isDragging = false;
+                });
+
+                // Прокрутка кнопками
                 prevBtn.addEventListener("click", () => {
                     carousel.scrollBy({ left: -100, behavior: "smooth" });
                 });
