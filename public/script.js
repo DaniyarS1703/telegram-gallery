@@ -55,32 +55,34 @@ document.addEventListener("DOMContentLoaded", async () => {
                     portfolio.scrollBy({ left: 150, behavior: "smooth" });
                 });
 
-                // Добавляем драг-скролл
+                // Добавляем драг-скролл (без инерции)
                 let isDragging = false;
                 let startX;
+                let scrollLeft;
 
                 portfolio.addEventListener("mousedown", (event) => {
                     isDragging = true;
+                    portfolio.classList.add("grabbing");
                     startX = event.pageX - portfolio.offsetLeft;
-                    portfolio.style.cursor = "grabbing";
-                });
-
-                portfolio.addEventListener("mouseup", () => {
-                    isDragging = false;
-                    portfolio.style.cursor = "grab";
+                    scrollLeft = portfolio.scrollLeft;
                 });
 
                 portfolio.addEventListener("mouseleave", () => {
                     isDragging = false;
-                    portfolio.style.cursor = "grab";
+                    portfolio.classList.remove("grabbing");
+                });
+
+                portfolio.addEventListener("mouseup", () => {
+                    isDragging = false;
+                    portfolio.classList.remove("grabbing");
                 });
 
                 portfolio.addEventListener("mousemove", (event) => {
                     if (!isDragging) return;
                     event.preventDefault();
                     const x = event.pageX - portfolio.offsetLeft;
-                    const walk = x - startX;
-                    portfolio.scrollLeft -= walk;
+                    const walk = (x - startX); // Убираем инерцию
+                    portfolio.scrollLeft = scrollLeft - walk;
                 });
             });
         }
