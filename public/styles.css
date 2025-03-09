@@ -1,34 +1,57 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const pool = require('./db'); // Подключение к базе данных
+document.addEventListener("DOMContentLoaded", async () => {
+    const photographersList = document.getElementById("photographers");
 
-const app = express();
-const PORT = process.env.PORT || 10000;
-
-app.use(cors());
-app.use(express.json());
-
-// 📌 Раздача статических файлов (для миниаппа)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 📌 Главная страница миниаппа
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// 📌 API: Получение списка фотографов (строго по рейтингу, при равенстве — случайный порядок)
-app.get('/api/photographers', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM photographers ORDER BY rating DESC, RANDOM()');
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Ошибка при получении списка фотографов:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+    if (!photographersList) {
+        console.error("Ошибка: не найден контейнер #photographers в index.html");
+        return;
     }
-});
 
-// 📌 Запуск сервера
-app.listen(PORT, () => {
-    console.log(`✅ Сервер запущен на порту ${PORT}`);
+    photographersList.innerHTML = "<p>Загрузка фотографов...</p>";
+
+    try {
+        const response = await fetch("/api/photographers");
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+
+        const photographers = await response.json();
+
+        if (photographers.length === 0) {
+            photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
+        } else {
+            photographersList.innerHTML = "";
+            photographers.forEach((photographer) => {
+                const photographerElement = document.createElement("div");
+                photographerElement.classList.add("photographer");
+
+                const fullStars = Math.floor(photographer.rating);
+                const halfStar = photographer.rating % 1 !== 0;
+                
+                let starsHTML = "";
+                for (let i = 0; i < fullStars; i++) {
+                    starsHTML += '<span class="star full">⭐</span>';
+                }
+                if (halfStar) {
+                    starsHTML += '<span class="star half">⭐</span>';
+                }
+                for (let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) {
+                    starsHTML += '<span class="star empty">⭐</span>';
+                }
+
+                photographerElement.innerHTML = `
+                    <div class="photographer-card">
+                        <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
+                        <h2>${photographer.name}</h2>
+                        <p>${photographer.bio || "Описание отсутствует"}</p>
+                        <div class="rating">${starsHTML}</div>
+                    </div>
+                `;
+
+                photographersList.appendChild(photographerElement);
+            });
+        }
+    } catch (error) {
+        console.error("Ошибка загрузки фотографов:", error);
+        photographersList.innerHTML = "<p>Ошибка загрузки данных.</p>";
+    }
 });
