@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const photographersList = document.getElementById("photographers");
 
     if (!photographersList) {
-        console.error("Ошибка: не найден контейнер #photographers в index.html");
+        console.error("Ошибка: контейнер #photographers не найден в index.html");
         return;
     }
 
@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const response = await fetch("https://telegram-gallery.onrender.com/api/photographers");
-        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
 
         const photographers = await response.json();
 
@@ -22,25 +24,64 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
 
-                // ⭐ Создание звёзд рейтинга
-                const stars = createStars(photographer.rating);
-
-                // 📷 Создание карусели портфолио
-                const portfolio = createPortfolio(photographer.portfolio);
-
                 photographerElement.innerHTML = `
                     <div class="photographer-card">
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <div class="rating">${stars}</div>
-                        <p>${photographer.rating.toFixed(1)}</p>
-                        ${portfolio}
+                        <p class="rating">⭐ ${photographer.rating}</p>
+                        <div class="portfolio-container">
+                            <button class="carousel-btn left-btn">‹</button>
+                            <div class="portfolio">
+                                ${photographer.portfolio.map((img) => `<img src="${img}" class="portfolio-img" onclick="openModal('${img}')">`).join("")}
+                            </div>
+                            <button class="carousel-btn right-btn">›</button>
+                        </div>
                     </div>
                 `;
 
                 photographersList.appendChild(photographerElement);
-                setupCarousel(photographerElement);
+
+                // Добавляем логику прокрутки
+                const portfolio = photographerElement.querySelector(".portfolio");
+                const leftBtn = photographerElement.querySelector(".left-btn");
+                const rightBtn = photographerElement.querySelector(".right-btn");
+
+                leftBtn.addEventListener("click", () => {
+                    portfolio.scrollBy({ left: -150, behavior: "smooth" });
+                });
+
+                rightBtn.addEventListener("click", () => {
+                    portfolio.scrollBy({ left: 150, behavior: "smooth" });
+                });
+
+                // Добавляем драг-скролл
+                let isDragging = false;
+                let startX;
+
+                portfolio.addEventListener("mousedown", (event) => {
+                    isDragging = true;
+                    startX = event.pageX - portfolio.offsetLeft;
+                    portfolio.style.cursor = "grabbing";
+                });
+
+                portfolio.addEventListener("mouseup", () => {
+                    isDragging = false;
+                    portfolio.style.cursor = "grab";
+                });
+
+                portfolio.addEventListener("mouseleave", () => {
+                    isDragging = false;
+                    portfolio.style.cursor = "grab";
+                });
+
+                portfolio.addEventListener("mousemove", (event) => {
+                    if (!isDragging) return;
+                    event.preventDefault();
+                    const x = event.pageX - portfolio.offsetLeft;
+                    const walk = x - startX;
+                    portfolio.scrollLeft -= walk;
+                });
             });
         }
     } catch (error) {
@@ -49,72 +90,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// 🌟 Функция создания звёзд рейтинга
-function createStars(rating) {
-    let fullStars = Math.floor(rating);
-    let halfStar = rating % 1 !== 0;
-    let starsHtml = "";
-
-    for (let i = 0; i < fullStars; i++) starsHtml += "★";
-    if (halfStar) starsHtml += "⯪";
-    for (let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) starsHtml += "☆";
-
-    return `<span class="stars">${starsHtml}</span>`;
-}
-
-// 🎠 Функция создания портфолио
-function createPortfolio(portfolio) {
-    if (!portfolio || portfolio.length === 0) return "<p>Портфолио отсутствует</p>";
-
-    return `
-        <div class="portfolio-container">
-            <div class="portfolio-wrapper">
-                ${portfolio.map(img => `<img src="${img}" class="portfolio-img" onclick="openModal('${img}')">`).join("")}
-            </div>
-        </div>
-    `;
-}
-
-// 🖱️ Установка Drag & Scroll для карусели
-function setupCarousel(container) {
-    const wrapper = container.querySelector(".portfolio-wrapper");
-    let isDown = false, startX, scrollLeft;
-
-    wrapper.addEventListener("mousedown", (e) => {
-        isDown = true;
-        startX = e.pageX - wrapper.offsetLeft;
-        scrollLeft = wrapper.scrollLeft;
-        wrapper.style.cursor = "grabbing";
-    });
-
-    wrapper.addEventListener("mouseleave", () => {
-        isDown = false;
-        wrapper.style.cursor = "grab";
-    });
-
-    wrapper.addEventListener("mouseup", () => {
-        isDown = false;
-        wrapper.style.cursor = "grab";
-    });
-
-    wrapper.addEventListener("mousemove", (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - wrapper.offsetLeft;
-        const walk = (x - startX) * 2;
-        wrapper.scrollLeft = scrollLeft - walk;
-    });
-}
-
-// 🔍 Функция открытия модального окна
+// Функция для модального окна
 function openModal(imageSrc) {
-    const modal = document.getElementById("imageModal");
-    const modalImg = document.getElementById("modalImage");
+    const modal = document.getElementById("modal");
+    const modalImg = document.getElementById("modal-img");
     modal.style.display = "flex";
     modalImg.src = imageSrc;
 }
 
-// ❌ Функция закрытия модального окна
+// Закрытие модального окна
 function closeModal() {
-    document.getElementById("imageModal").style.display = "none";
+    document.getElementById("modal").style.display = "none";
 }
