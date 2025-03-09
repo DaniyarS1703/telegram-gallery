@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let photographers = await response.json();
 
-        // 📌 Сортируем по рейтингу (если одинаковый – случайное расположение)
+        // 📌 Сортировка по рейтингу (если одинаковый – случайное расположение)
         photographers.sort((a, b) => {
             if (b.rating === a.rating) return Math.random() - 0.5;
             return b.rating - a.rating;
@@ -42,6 +42,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 photographersList.appendChild(photographerElement);
             });
+
+            // 📌 Подключаем drag для карусели
+            setupDrag();
 
             // 📌 Подключаем функционал модального окна с увеличением
             setupModal();
@@ -74,6 +77,40 @@ function generatePortfolio(images) {
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
+// 📌 Drag & Scroll для карусели
+function setupDrag() {
+    document.querySelectorAll(".portfolio").forEach(portfolio => {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        portfolio.addEventListener("mousedown", (e) => {
+            isDown = true;
+            portfolio.classList.add("active");
+            startX = e.pageX - portfolio.offsetLeft;
+            scrollLeft = portfolio.scrollLeft;
+        });
+
+        portfolio.addEventListener("mouseleave", () => {
+            isDown = false;
+            portfolio.classList.remove("active");
+        });
+
+        portfolio.addEventListener("mouseup", () => {
+            isDown = false;
+            portfolio.classList.remove("active");
+        });
+
+        portfolio.addEventListener("mousemove", (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - portfolio.offsetLeft;
+            const walk = (x - startX) * 2; // Скорость прокрутки
+            portfolio.scrollLeft = scrollLeft - walk;
+        });
+    });
+}
+
 // 📌 Функция модального окна с увеличением
 function setupModal() {
     const modal = document.createElement("div");
@@ -103,9 +140,6 @@ function setupModal() {
 
     // 📌 Добавляем увеличение при касании на мобильных устройствах
     let scale = 1;
-    let startX = 0;
-    let startY = 0;
-    let isPanning = false;
 
     modalImg.addEventListener("wheel", (e) => {
         e.preventDefault();
@@ -115,19 +149,11 @@ function setupModal() {
     });
 
     modalImg.addEventListener("mousedown", (e) => {
-        isPanning = true;
-        startX = e.clientX - modalImg.offsetLeft;
-        startY = e.clientY - modalImg.offsetTop;
+        e.preventDefault();
+        modalImg.style.cursor = "grabbing";
     });
 
     modalImg.addEventListener("mouseup", () => {
-        isPanning = false;
-    });
-
-    modalImg.addEventListener("mousemove", (e) => {
-        if (!isPanning) return;
-        e.preventDefault();
-        modalImg.style.left = `${e.clientX - startX}px`;
-        modalImg.style.top = `${e.clientY - startY}px`;
+        modalImg.style.cursor = "grab";
     });
 }
