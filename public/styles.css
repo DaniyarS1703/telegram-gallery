@@ -1,4 +1,4 @@
-/* 📌 Карточки фотографов */
+/* 📌 Карточка фотографа */
 .photographer-card {
     background: white;
     padding: 15px;
@@ -14,15 +14,19 @@
 /* 📌 Контейнер портфолио */
 .portfolio {
     display: flex;
-    gap: 10px;
-    overflow: hidden;
+    overflow-x: auto;
+    white-space: nowrap;
     padding: 10px;
     margin-top: 10px;
     max-width: 95%;
     border-radius: 10px;
     scrollbar-width: none;
-    user-select: none;
-    cursor: grab;
+    -ms-overflow-style: none;
+}
+
+/* 📌 Отключаем стандартный скролл */
+.portfolio::-webkit-scrollbar {
+    display: none;
 }
 
 /* 📌 Изображения портфолио */
@@ -31,10 +35,6 @@
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s ease-in-out;
-}
-
-.portfolio img:hover {
-    transform: scale(1.05);
 }
 
 /* 📌 Модальное окно */

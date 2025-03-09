@@ -43,8 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем drag для карусели
-            setupDrag();
+            // 📌 Подключаем старый drag
+            setupOldDrag();
 
             // 📌 Подключаем функционал модального окна с увеличением
             setupModal();
@@ -77,35 +77,35 @@ function generatePortfolio(images) {
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Drag & Scroll для карусели
-function setupDrag() {
+// 📌 Возвращаем старый Drag & Scroll для карусели
+function setupOldDrag() {
     document.querySelectorAll(".portfolio").forEach(portfolio => {
-        let isDown = false;
+        let isDragging = false;
         let startX;
         let scrollLeft;
 
         portfolio.addEventListener("mousedown", (e) => {
-            isDown = true;
-            portfolio.classList.add("active");
+            isDragging = true;
             startX = e.pageX - portfolio.offsetLeft;
             scrollLeft = portfolio.scrollLeft;
+            portfolio.style.cursor = "grabbing";
         });
 
         portfolio.addEventListener("mouseleave", () => {
-            isDown = false;
-            portfolio.classList.remove("active");
+            isDragging = false;
+            portfolio.style.cursor = "grab";
         });
 
         portfolio.addEventListener("mouseup", () => {
-            isDown = false;
-            portfolio.classList.remove("active");
+            isDragging = false;
+            portfolio.style.cursor = "grab";
         });
 
         portfolio.addEventListener("mousemove", (e) => {
-            if (!isDown) return;
+            if (!isDragging) return;
             e.preventDefault();
             const x = e.pageX - portfolio.offsetLeft;
-            const walk = (x - startX) * 2; // Скорость прокрутки
+            const walk = (x - startX) * 2;
             portfolio.scrollLeft = scrollLeft - walk;
         });
     });
