@@ -1,57 +1,114 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    const photographersList = document.getElementById("photographers");
+.photographer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 15px;
+    width: 90%;
+    max-width: 350px;
+}
 
-    if (!photographersList) {
-        console.error("Ошибка: не найден контейнер #photographers в index.html");
-        return;
-    }
+.avatar {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    border-radius: 10px;
+}
 
-    photographersList.innerHTML = "<p>Загрузка фотографов...</p>";
+.rating-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5px;
+}
 
-    try {
-        const response = await fetch("/api/photographers");
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
+.rating-text {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-right: 5px;
+}
 
-        const photographers = await response.json();
+.rating {
+    display: flex;
+    align-items: center;
+}
 
-        if (photographers.length === 0) {
-            photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
-        } else {
-            photographersList.innerHTML = "";
-            photographers.forEach((photographer) => {
-                const photographerElement = document.createElement("div");
-                photographerElement.classList.add("photographer");
+.star {
+    font-size: 1.2em;
+    margin: 0 2px;
+}
 
-                const fullStars = Math.floor(photographer.rating);
-                const halfStar = photographer.rating % 1 !== 0;
-                
-                let starsHTML = "";
-                for (let i = 0; i < fullStars; i++) {
-                    starsHTML += '<span class="star full">⭐</span>';
-                }
-                if (halfStar) {
-                    starsHTML += '<span class="star half">⭐</span>';
-                }
-                for (let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) {
-                    starsHTML += '<span class="star empty">⭐</span>';
-                }
+.full {
+    color: gold;
+}
 
-                photographerElement.innerHTML = `
-                    <div class="photographer-card">
-                        <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
-                        <h2>${photographer.name}</h2>
-                        <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <div class="rating">${starsHTML}</div>
-                    </div>
-                `;
+.half {
+    background: linear-gradient(to right, gold 50%, lightgray 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-                photographersList.appendChild(photographerElement);
-            });
-        }
-    } catch (error) {
-        console.error("Ошибка загрузки фотографов:", error);
-        photographersList.innerHTML = "<p>Ошибка загрузки данных.</p>";
-    }
-});
+.empty {
+    color: lightgray;
+}
+.photographer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 15px;
+    width: 90%;
+    max-width: 350px;
+}
+
+.avatar {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    border-radius: 10px;
+}
+
+.rating-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+.rating-text {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+}
+
+.star {
+    font-size: 1.2em;
+    margin: 0 2px;
+}
+
+.full {
+    color: gold;
+}
+
+.half {
+    background: linear-gradient(to right, gold 50%, lightgray 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.empty {
+    color: lightgray;
+}

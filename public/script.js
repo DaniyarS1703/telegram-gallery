@@ -14,7 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
-        const photographers = await response.json();
+        let photographers = await response.json();
+
+        // 📌 Сортируем по рейтингу (если рейтинг одинаковый, случайный порядок)
+        photographers.sort((a, b) => b.rating - a.rating || Math.random() - 0.5);
 
         if (photographers.length === 0) {
             photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
@@ -44,7 +47,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <div class="rating">${starsHTML}</div>
+                        <div class="rating-container">
+                            <span class="rating-text">${photographer.rating.toFixed(1)}</span>
+                            <div class="rating">${starsHTML}</div>
+                        </div>
                     </div>
                 `;
 
