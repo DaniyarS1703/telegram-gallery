@@ -3,180 +3,119 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
+    background-color: #f4f4f4;
 }
 
-/* Контейнер главного блока */
+/* Контейнер мини-приложения */
 .container {
     max-width: 600px;
-    margin: auto;
+    margin: 20px auto;
+    background: #fff;
     padding: 20px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Заголовок */
 h1 {
     text-align: center;
-    font-size: 22px;
+    font-size: 24px;
 }
 
 /* Карточка фотографа */
 .photographer {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #ddd;
+    padding: 15px 0;
+    text-align: center;
 }
 
 .photographer img.avatar {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    display: block;
-    margin: 0 auto 10px;
 }
 
-/* Имя фотографа */
-.photographer h2 {
-    text-align: center;
-    font-size: 18px;
-    margin: 5px 0;
-}
-
-/* Описание фотографа */
-.photographer p {
-    text-align: center;
-    font-size: 14px;
-    color: #555;
-    margin: 5px 0;
-}
-
-/* Секция рейтинга */
+/* Рейтинг звезд */
 .rating {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
     margin-top: 5px;
 }
 
 .star {
-    font-size: 20px;
-    color: gold;
-    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url('star-full.svg') no-repeat center center;
+    background-size: contain;
 }
 
-.half-star {
-    font-size: 20px;
-    color: gold;
-    display: inline-block;
-    position: relative;
+.star.half {
+    background: url('star-half.svg') no-repeat center center;
+    background-size: contain;
 }
 
-.half-star::before {
-    content: "★";
-    position: absolute;
-    left: 0;
-    width: 50%;
-    overflow: hidden;
-    color: gold;
+.star.empty {
+    background: url('star-empty.svg') no-repeat center center;
+    background-size: contain;
 }
 
-/* 📌 Карусель портфолио (шире, почти до краёв) */
+/* Карусель портфолио */
 .carousel-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 10px;
     position: relative;
     width: 100%;
+    overflow: hidden;
+    margin-top: 10px;
 }
 
-/* 📌 Карусель теперь шире */
 .carousel {
     display: flex;
+    gap: 10px;
     overflow-x: auto;
-    scroll-behavior: smooth;
-    width: 90%;
-    padding: 10px 0;
-    white-space: nowrap;
-}
-
-.carousel img {
-    width: 100px; /* Сделал изображения больше */
-    height: 100px;
-    margin-right: 8px;
-    border-radius: 5px;
-    object-fit: cover;
+    scroll-snap-type: x mandatory;
+    padding-left: 10px; /* Исправлено для первой картинки */
+    scrollbar-width: none;
 }
 
 .carousel::-webkit-scrollbar {
-    height: 5px;
+    display: none;
 }
 
-.carousel::-webkit-scrollbar-thumb {
-    background: #007bff;
-    border-radius: 10px;
+.carousel img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    scroll-snap-align: start;
+    border-radius: 8px;
 }
 
-/* 🔘 Улучшенные кнопки прокрутки (скрыты по умолчанию, поверх картинок) */
-.prev-btn, .next-btn {
-    background: rgba(0, 123, 255, 0.7); /* Полупрозрачность */
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    border-radius: 10px;
-    width: 40px; /* Кнопки стали шире */
-    height: 28px; /* Кнопки стали тоньше */
-    transition: all 0.3s ease-in-out;
-    opacity: 0; /* Скрываем кнопки */
+/* Кнопки прокрутки */
+.carousel-buttons {
     position: absolute;
     top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
     transform: translateY(-50%);
-    z-index: 2; /* Подняли кнопки поверх изображений */
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
-.prev-btn {
-    left: 5px;
-}
-
-.next-btn {
-    right: 5px;
-}
-
-/* Кнопки появляются при наведении на контейнер карусели */
-.carousel-container:hover .prev-btn,
-.carousel-container:hover .next-btn {
+.carousel-container:hover .carousel-buttons {
     opacity: 1;
 }
 
-/* Анимация при наведении */
-.prev-btn:hover, .next-btn:hover {
-    background: rgba(0, 86, 179, 0.9);
-    transform: translateY(-50%) scale(1.1);
+.carousel-button {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
 }
 
-/* Медиа-запросы для мобильных устройств */
-@media (max-width: 480px) {
-    .photographer img.avatar {
-        width: 80px;
-        height: 80px;
-    }
-
-    .star, .half-star {
-        font-size: 18px;
-    }
-
-    .carousel img {
-        width: 90px;
-        height: 90px;
-    }
-
-    .prev-btn, .next-btn {
-        width: 36px;
-        height: 26px;
-        font-size: 12px;
-    }
+.carousel-button:hover {
+    background: rgba(0, 0, 0, 0.8);
 }
