@@ -43,10 +43,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем старый drag
+            // 📌 Подключаем drag & scroll
             setupOldDrag();
 
-            // 📌 Подключаем функционал модального окна с увеличением
+            // 📌 Подключаем функционал модального окна с увеличением и перемещением
             setupModal();
         }
     } catch (error) {
@@ -77,7 +77,7 @@ function generatePortfolio(images) {
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Возвращаем старый Drag & Scroll для карусели
+// 📌 Drag & Scroll для карусели портфолио
 function setupOldDrag() {
     document.querySelectorAll(".portfolio").forEach(portfolio => {
         let isDragging = false;
@@ -111,20 +111,27 @@ function setupOldDrag() {
     });
 }
 
-// 📌 Функция модального окна с увеличением
+// 📌 Улучшенное модальное окно с зумом + перемещением
 function setupModal() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
-    modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Просмотр"></div>`;
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img src="" alt="Просмотр" class="modal-img">
+        </div>
+    `;
     document.body.appendChild(modal);
 
-    const modalImg = modal.querySelector("img");
+    const modalImg = modal.querySelector(".modal-img");
     const closeModal = modal.querySelector(".close");
 
     document.querySelectorAll(".portfolio-img").forEach(img => {
         img.addEventListener("click", () => {
             modal.style.display = "flex";
             modalImg.src = img.src;
+            modalImg.style.transform = "scale(1)";
+            modalImg.dataset.scale = "1";
         });
     });
 
@@ -138,22 +145,42 @@ function setupModal() {
         }
     });
 
-    // 📌 Добавляем увеличение при касании на мобильных устройствах
+    // 📌 Добавляем зум + перемещение
     let scale = 1;
+    let isDragging = false;
+    let startX, startY, imgX = 0, imgY = 0;
 
     modalImg.addEventListener("wheel", (e) => {
         e.preventDefault();
-        scale += e.deltaY * -0.01;
-        scale = Math.min(Math.max(1, scale), 3);
-        modalImg.style.transform = `scale(${scale})`;
+        const zoomFactor = 0.1;
+        let newScale = scale + (e.deltaY < 0 ? zoomFactor : -zoomFactor);
+        newScale = Math.max(1, Math.min(newScale, 3));
+
+        if (newScale !== scale) {
+            scale = newScale;
+            modalImg.style.transform = `scale(${scale}) translate(${imgX}px, ${imgY}px)`;
+        }
     });
 
     modalImg.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        modalImg.style.cursor = "grabbing";
+        if (scale > 1) {
+            isDragging = true;
+            startX = e.clientX - imgX;
+            startY = e.clientY - imgY;
+            modalImg.style.cursor = "grabbing";
+        }
     });
 
-    modalImg.addEventListener("mouseup", () => {
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
         modalImg.style.cursor = "grab";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (isDragging) {
+            imgX = e.clientX - startX;
+            imgY = e.clientY - startY;
+            modalImg.style.transform = `scale(${scale}) translate(${imgX}px, ${imgY}px)`;
+        }
     });
 }
