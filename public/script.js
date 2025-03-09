@@ -24,15 +24,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
 
-                // 🔥 Создаём звёздочки вместо числа
+                // 🔥 Создаём звёздочки и добавляем числовой рейтинг
                 const stars = generateStars(photographer.rating);
+                const numericRating = `<span class="rating-number">(${photographer.rating.toFixed(1)})</span>`;
 
                 photographerElement.innerHTML = `
                     <div class="photographer-card">
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <p>${stars}</p>
+                        <p class="rating">${stars} ${numericRating}</p>
                     </div>
                 `;
 
