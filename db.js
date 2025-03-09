@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL + "?application_name=myapp&client_encoding=UTF8",
+    connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false
     }
