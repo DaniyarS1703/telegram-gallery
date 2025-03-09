@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 photographersList.appendChild(photographerElement);
 
-                // Добавляем логику прокрутки
+                // Добавляем кнопки прокрутки
                 const portfolio = photographerElement.querySelector(".portfolio");
                 const leftBtn = photographerElement.querySelector(".left-btn");
                 const rightBtn = photographerElement.querySelector(".right-btn");
@@ -57,34 +57,33 @@ document.addEventListener("DOMContentLoaded", async () => {
                     portfolio.scrollBy({ left: 150, behavior: "smooth" });
                 });
 
-                // Добавляем драг-скролл (без инерции)
+                // ✅ Улучшенный драг-скролл (без задержек)
                 let isDragging = false;
-                let startX;
-                let scrollLeft;
+                let startX, scrollLeft;
 
                 portfolio.addEventListener("mousedown", (event) => {
                     isDragging = true;
-                    portfolio.classList.add("grabbing");
-                    startX = event.pageX - portfolio.offsetLeft;
+                    startX = event.clientX;
                     scrollLeft = portfolio.scrollLeft;
+                    portfolio.style.cursor = "grabbing";
                 });
 
-                portfolio.addEventListener("mouseleave", () => {
+                document.addEventListener("mouseup", () => {
                     isDragging = false;
-                    portfolio.classList.remove("grabbing");
-                });
-
-                portfolio.addEventListener("mouseup", () => {
-                    isDragging = false;
-                    portfolio.classList.remove("grabbing");
+                    portfolio.style.cursor = "grab";
                 });
 
                 portfolio.addEventListener("mousemove", (event) => {
                     if (!isDragging) return;
                     event.preventDefault();
-                    const x = event.pageX - portfolio.offsetLeft;
-                    const walk = (x - startX);
-                    portfolio.scrollLeft = scrollLeft - walk;
+                    const x = event.clientX;
+                    const move = startX - x;
+                    portfolio.scrollLeft = scrollLeft + move;
+                });
+
+                portfolio.addEventListener("mouseleave", () => {
+                    isDragging = false;
+                    portfolio.style.cursor = "grab";
                 });
             });
         }
@@ -94,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// Функция для модального окна с масштабированием
+// ✅ Исправленное модальное окно с быстрым масштабированием и перетаскиванием
 function openModal(imageSrc) {
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modal-img");
@@ -103,7 +102,6 @@ function openModal(imageSrc) {
     modal.style.display = "flex";
     modalImg.src = imageSrc;
 
-    // Добавляем возможность зума (увеличения)
     let scale = 1;
     let translateX = 0;
     let translateY = 0;
@@ -114,8 +112,7 @@ function openModal(imageSrc) {
 
     modalImg.onwheel = (event) => {
         event.preventDefault();
-        const zoomFactor = 0.1;
-        scale += event.deltaY > 0 ? -zoomFactor : zoomFactor;
+        scale += event.deltaY > 0 ? -0.1 : 0.1;
         scale = Math.min(Math.max(1, scale), 3);
         updateTransform();
     };
@@ -136,18 +133,13 @@ function openModal(imageSrc) {
         updateTransform();
     };
 
-    modalImg.onmouseup = () => {
-        isDragging = false;
-    };
-
-    modalImg.onmouseleave = () => {
-        isDragging = false;
-    };
+    modalImg.onmouseup = () => isDragging = false;
+    modalImg.onmouseleave = () => isDragging = false;
 
     modalOverlay.onclick = closeModal;
 }
 
-// Функция для закрытия модального окна
+// ✅ Закрытие модального окна
 function closeModal() {
     document.getElementById("modal").style.display = "none";
 }
