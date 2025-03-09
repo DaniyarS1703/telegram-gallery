@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 📌 API: Получение списка фотографов (сортировка по рейтингу, при равенстве — случайный порядок)
+// 📌 API: Получение списка фотографов (строго по рейтингу, при равенстве — случайный порядок)
 app.get('/api/photographers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM photographers ORDER BY rating DESC, RANDOM()');
