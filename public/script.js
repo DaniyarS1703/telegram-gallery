@@ -43,8 +43,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            setupDrag();
+            // 📌 Подключаем функционал модального окна и Drag&Drop
             setupModal();
+            setupDrag();
         }
     } catch (error) {
         console.error("Ошибка загрузки фотографов:", error);
@@ -74,40 +75,46 @@ function generatePortfolio(images) {
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Функция Drag&Drop для портфолио
+// 📌 Функция Drag&Drop (движение только при зажатой ЛКМ)
 function setupDrag() {
     document.querySelectorAll(".portfolio").forEach(portfolio => {
-        let isDown = false;
-        let startX, scrollLeft;
+        let isDragging = false;
+        let startX, startScrollLeft;
 
         portfolio.addEventListener("mousedown", (e) => {
-            isDown = true;
+            if (e.button !== 0) return; // 📌 Разрешаем только ЛКМ
+            isDragging = true;
             startX = e.pageX - portfolio.offsetLeft;
-            scrollLeft = portfolio.scrollLeft;
+            startScrollLeft = portfolio.scrollLeft;
             portfolio.style.cursor = "grabbing";
         });
 
-        portfolio.addEventListener("mouseleave", () => {
-            isDown = false;
-            portfolio.style.cursor = "grab";
+        portfolio.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - portfolio.offsetLeft;
+            const walk = (x - startX) * 2; // 📌 Ускоренное движение
+            portfolio.scrollLeft = startScrollLeft - walk;
         });
 
         portfolio.addEventListener("mouseup", () => {
-            isDown = false;
+            isDragging = false;
             portfolio.style.cursor = "grab";
         });
 
-        portfolio.addEventListener("mousemove", (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - portfolio.offsetLeft;
-            const walk = (x - startX) * 2;
-            portfolio.scrollLeft = scrollLeft - walk;
+        portfolio.addEventListener("mouseleave", () => {
+            isDragging = false;
+            portfolio.style.cursor = "grab";
         });
+    });
+
+    // 📌 Блокируем случайный скроллинг без зажатой ЛКМ
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
     });
 }
 
-// 📌 Функция модального окна с зумом
+// 📌 Функция открытия изображений в модальном окне
 function setupModal() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
@@ -128,7 +135,9 @@ function setupModal() {
         modal.style.display = "none";
     });
 
-    modalImg.addEventListener("click", () => {
-        modalImg.classList.toggle("zoom");
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
     });
 }
