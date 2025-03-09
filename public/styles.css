@@ -1,121 +1,100 @@
-/* Общие стили */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-}
+document.addEventListener("DOMContentLoaded", async () => {
+    const photographersList = document.getElementById("photographers");
 
-/* Контейнер мини-приложения */
-.container {
-    max-width: 600px;
-    margin: 20px auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+    if (!photographersList) {
+        console.error("Ошибка: не найден контейнер #photographers в index.html");
+        return;
+    }
 
-/* Заголовок */
-h1 {
-    text-align: center;
-    font-size: 24px;
-}
+    photographersList.innerHTML = "<p>Загрузка фотографов...</p>";
 
-/* Карточка фотографа */
-.photographer {
-    border-bottom: 1px solid #ddd;
-    padding: 15px 0;
-    text-align: center;
-}
+    try {
+        const response = await fetch("https://telegram-gallery.onrender.com/api/photographers");
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
 
-.photographer img.avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-}
+        const photographers = await response.json();
 
-/* Рейтинг звезд */
-.rating {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2px;
-    margin-top: 5px;
-}
+        if (photographers.length === 0) {
+            photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
+        } else {
+            photographersList.innerHTML = "";
+            photographers.forEach((photographer) => {
+                const photographerElement = document.createElement("div");
+                photographerElement.classList.add("photographer");
 
-.star {
-    width: 20px;
-    height: 20px;
-    background: url('star-full.svg') no-repeat center center;
-    background-size: contain;
-}
+                // Создаем HTML карточки фотографа
+                photographerElement.innerHTML = `
+                    <div class="photographer-card">
+                        <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
+                        <h2>${photographer.name}</h2>
+                        <p>${photographer.bio || "Описание отсутствует"}</p>
+                        <p>⭐ ${photographer.rating}</p>
+                        <div class="carousel-container">
+                            <button class="prev-btn">&lt;</button>
+                            <div class="carousel" id="carousel-${photographer.id}">
+                                ${photographer.portfolio.map(img => `<img src="${img}" alt="Portfolio">`).join('')}
+                            </div>
+                            <button class="next-btn">&gt;</button>
+                        </div>
+                    </div>
+                `;
 
-.star.half {
-    background: url('star-half.svg') no-repeat center center;
-    background-size: contain;
-}
+                photographersList.appendChild(photographerElement);
 
-.star.empty {
-    background: url('star-empty.svg') no-repeat center center;
-    background-size: contain;
-}
+                // Оптимизированная карусель
+                const carousel = document.getElementById(`carousel-${photographer.id}`);
+                const prevBtn = photographerElement.querySelector(".prev-btn");
+                const nextBtn = photographerElement.querySelector(".next-btn");
 
-/* Карусель портфолио */
-.carousel-container {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    margin-top: 10px;
-}
+                let isDragging = false;
+                let startX, scrollLeft;
 
-.carousel {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding-left: 10px; /* Исправлено для первой картинки */
-    scrollbar-width: none;
-}
+                // Отключаем pointer-events для изображений, чтобы тянуть проще
+                carousel.querySelectorAll("img").forEach(img => {
+                    img.style.pointerEvents = "none";
+                });
 
-.carousel::-webkit-scrollbar {
-    display: none;
-}
+                // Начало перетаскивания (momentum отключен)
+                carousel.addEventListener("mousedown", (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    scrollLeft = carousel.scrollLeft;
+                    carousel.style.scrollBehavior = "auto"; // Отключаем плавность, чтобы ускорить
+                    e.preventDefault();
+                });
 
-.carousel img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    scroll-snap-align: start;
-    border-radius: 8px;
-}
+                // Движение мыши
+                carousel.addEventListener("mousemove", (e) => {
+                    if (!isDragging) return;
+                    const deltaX = e.clientX - startX;
+                    carousel.scrollLeft = scrollLeft - deltaX;
+                });
 
-/* Кнопки прокрутки */
-.carousel-buttons {
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    transform: translateY(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
+                // Окончание перетаскивания
+                carousel.addEventListener("mouseup", () => {
+                    isDragging = false;
+                    carousel.style.scrollBehavior = "smooth"; // Включаем плавность после отпускания
+                });
 
-.carousel-container:hover .carousel-buttons {
-    opacity: 1;
-}
+                carousel.addEventListener("mouseleave", () => {
+                    isDragging = false;
+                    carousel.style.scrollBehavior = "smooth";
+                });
 
-.carousel-button {
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    border: none;
-    padding: 8px;
-    cursor: pointer;
-    border-radius: 50%;
-}
+                // Прокрутка кнопками (оставляем)
+                prevBtn.addEventListener("click", () => {
+                    carousel.scrollBy({ left: -100, behavior: "smooth" });
+                });
 
-.carousel-button:hover {
-    background: rgba(0, 0, 0, 0.8);
-}
+                nextBtn.addEventListener("click", () => {
+                    carousel.scrollBy({ left: 100, behavior: "smooth" });
+                });
+            });
+        }
+    } catch (error) {
+        console.error("Ошибка загрузки фотографов:", error);
+        photographersList.innerHTML = "<p>Ошибка загрузки данных.</p>";
+    }
+});
