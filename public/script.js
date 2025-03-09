@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const photographersList = document.getElementById("photographers");
 
     if (!photographersList) {
-        console.error("Ошибка: контейнер #photographers не найден.");
+        console.error("Ошибка: не найден контейнер #photographers в index.html");
         return;
     }
 
@@ -10,52 +10,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const response = await fetch("https://telegram-gallery.onrender.com/api/photographers");
-        
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
 
-        let photographers = await response.json();
-        console.log("Фотографы загружены:", photographers);
+        const photographers = await response.json();
 
         if (photographers.length === 0) {
             photographersList.innerHTML = "<p>Фотографов пока нет.</p>";
         } else {
-            // 📌 Сортируем по рейтингу, если равен — случайный порядок
-            photographers.sort((a, b) => {
-                if (b.rating === a.rating) return Math.random() - 0.5;
-                return b.rating - a.rating;
-            });
-
             photographersList.innerHTML = "";
             photographers.forEach((photographer) => {
                 const photographerElement = document.createElement("div");
                 photographerElement.classList.add("photographer");
+
+                // ⭐ Создание звёзд рейтинга
+                const stars = createStars(photographer.rating);
+
+                // 📷 Создание карусели портфолио
+                const portfolio = createPortfolio(photographer.portfolio);
 
                 photographerElement.innerHTML = `
                     <div class="photographer-card">
                         <img src="${photographer.avatar}" alt="${photographer.name}" class="avatar">
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
-                        <div class="rating">${generateStarRating(photographer.rating)}</div>
-                        <p class="rating-number">${photographer.rating.toFixed(1)}</p>
-                        
-                        <div class="portfolio-container">
-                            <button class="scroll-button left" onclick="scrollPortfolio(this, -1)">&#9664;</button>
-                            <div class="portfolio">
-                                ${photographer.portfolio.map(img => `
-                                    <img src="${img}" alt="Фото портфолио" onclick="openModal('${img}')">
-                                `).join('')}
-                            </div>
-                            <button class="scroll-button right" onclick="scrollPortfolio(this, 1)">&#9654;</button>
-                        </div>
+                        <div class="rating">${stars}</div>
+                        <p>${photographer.rating.toFixed(1)}</p>
+                        ${portfolio}
                     </div>
                 `;
 
                 photographersList.appendChild(photographerElement);
-
-                // 📌 Инициализация Drag & Scroll
-                setupDragScroll(photographerElement.querySelector(".portfolio"));
+                setupCarousel(photographerElement);
             });
         }
     } catch (error) {
@@ -64,72 +49,72 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// 📌 Генерация звёздного рейтинга
-function generateStarRating(rating) {
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5 ? '<span class="star half">&#9733;</span>' : '';
-    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+// 🌟 Функция создания звёзд рейтинга
+function createStars(rating) {
+    let fullStars = Math.floor(rating);
+    let halfStar = rating % 1 !== 0;
+    let starsHtml = "";
 
-    return '★'.repeat(fullStars) + halfStar + '☆'.repeat(emptyStars);
+    for (let i = 0; i < fullStars; i++) starsHtml += "★";
+    if (halfStar) starsHtml += "⯪";
+    for (let i = fullStars + (halfStar ? 1 : 0); i < 5; i++) starsHtml += "☆";
+
+    return `<span class="stars">${starsHtml}</span>`;
 }
 
-// 📌 Перетаскивание карусели мышкой
-function setupDragScroll(portfolio) {
-    let isDown = false;
-    let startX, scrollLeft;
+// 🎠 Функция создания портфолио
+function createPortfolio(portfolio) {
+    if (!portfolio || portfolio.length === 0) return "<p>Портфолио отсутствует</p>";
 
-    portfolio.addEventListener("mousedown", (e) => {
-        isDown = true;
-        startX = e.pageX - portfolio.offsetLeft;
-        scrollLeft = portfolio.scrollLeft;
-        portfolio.style.cursor = "grabbing";
-    });
-
-    portfolio.addEventListener("mouseleave", () => {
-        isDown = false;
-        portfolio.style.cursor = "grab";
-    });
-
-    portfolio.addEventListener("mouseup", () => {
-        isDown = false;
-        portfolio.style.cursor = "grab";
-    });
-
-    portfolio.addEventListener("mousemove", (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - portfolio.offsetLeft;
-        const walk = (x - startX) * 2; // Умножаем на 2 для ускоренного движения
-        portfolio.scrollLeft = scrollLeft - walk;
-    });
-}
-
-// 📌 Прокрутка кнопками
-function scrollPortfolio(button, direction) {
-    const portfolio = button.parentElement.querySelector(".portfolio");
-    portfolio.scrollLeft += direction * 150;
-}
-
-// 📌 Открытие изображения в модальном окне
-function openModal(imageUrl) {
-    const modal = document.createElement("div");
-    modal.classList.add("modal");
-
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <img src="${imageUrl}" alt="Фото" class="modal-image">
+    return `
+        <div class="portfolio-container">
+            <div class="portfolio-wrapper">
+                ${portfolio.map(img => `<img src="${img}" class="portfolio-img" onclick="openModal('${img}')">`).join("")}
+            </div>
         </div>
     `;
-
-    document.body.appendChild(modal);
-    modal.addEventListener("click", closeModal);
 }
 
-// 📌 Закрытие модального окна
+// 🖱️ Установка Drag & Scroll для карусели
+function setupCarousel(container) {
+    const wrapper = container.querySelector(".portfolio-wrapper");
+    let isDown = false, startX, scrollLeft;
+
+    wrapper.addEventListener("mousedown", (e) => {
+        isDown = true;
+        startX = e.pageX - wrapper.offsetLeft;
+        scrollLeft = wrapper.scrollLeft;
+        wrapper.style.cursor = "grabbing";
+    });
+
+    wrapper.addEventListener("mouseleave", () => {
+        isDown = false;
+        wrapper.style.cursor = "grab";
+    });
+
+    wrapper.addEventListener("mouseup", () => {
+        isDown = false;
+        wrapper.style.cursor = "grab";
+    });
+
+    wrapper.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - wrapper.offsetLeft;
+        const walk = (x - startX) * 2;
+        wrapper.scrollLeft = scrollLeft - walk;
+    });
+}
+
+// 🔍 Функция открытия модального окна
+function openModal(imageSrc) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    modal.style.display = "flex";
+    modalImg.src = imageSrc;
+}
+
+// ❌ Функция закрытия модального окна
 function closeModal() {
-    const modal = document.querySelector(".modal");
-    if (modal) {
-        modal.remove();
-    }
+    document.getElementById("imageModal").style.display = "none";
 }
