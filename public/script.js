@@ -36,12 +36,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
                         <div class="rating">${generateStars(photographer.rating)}</div>
-                        <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
+                        <div class="portfolio-wrapper">
+                            <button class="arrow left">&#9665;</button>
+                            <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
+                            <button class="arrow right">&#9655;</button>
+                        </div>
                     </div>
                 `;
 
                 photographersList.appendChild(photographerElement);
             });
+
+            // 📌 Подключаем функционал стрелок карусели
+            setupCarouselArrows();
 
             // 📌 Подключаем функционал модального окна
             setupModal();
@@ -72,6 +79,23 @@ function generatePortfolio(images) {
     if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
 
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
+}
+
+// 📌 Функция стрелок в карусели
+function setupCarouselArrows() {
+    document.querySelectorAll(".portfolio-wrapper").forEach(wrapper => {
+        const leftArrow = wrapper.querySelector(".arrow.left");
+        const rightArrow = wrapper.querySelector(".arrow.right");
+        const portfolio = wrapper.querySelector(".portfolio");
+
+        leftArrow.addEventListener("click", () => {
+            portfolio.scrollBy({ left: -100, behavior: "smooth" });
+        });
+
+        rightArrow.addEventListener("click", () => {
+            portfolio.scrollBy({ left: 100, behavior: "smooth" });
+        });
+    });
 }
 
 // 📌 Функция модального окна с зумом
@@ -111,29 +135,5 @@ function setupModal() {
         scale = Math.min(Math.max(1, scale), 3); // Лимиты зума
         modalImg.style.transform = `scale(${scale})`;
         modalImg.dataset.scale = scale;
-    });
-
-    // 🎯 Перемещение зумированного изображения
-    let isDragging = false, startX, startY, imgX = 0, imgY = 0;
-
-    modalImg.addEventListener("mousedown", (e) => {
-        if (parseFloat(modalImg.dataset.scale) > 1) {
-            isDragging = true;
-            startX = e.clientX - imgX;
-            startY = e.clientY - imgY;
-            modalImg.style.cursor = "grabbing";
-        }
-    });
-
-    window.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-        imgX = e.clientX - startX;
-        imgY = e.clientY - startY;
-        modalImg.style.transform = `scale(${modalImg.dataset.scale}) translate(${imgX}px, ${imgY}px)`;
-    });
-
-    window.addEventListener("mouseup", () => {
-        isDragging = false;
-        modalImg.style.cursor = "grab";
     });
 }
