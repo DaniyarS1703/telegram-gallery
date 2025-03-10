@@ -43,9 +43,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем функционал модального окна и Drag&Drop
+            // 📌 Подключаем функционал модального окна и новую карусель
             setupModal();
-            setupDrag();
+            setupNewCarousel();
         }
     } catch (error) {
         console.error("Ошибка загрузки фотографов:", error);
@@ -72,45 +72,65 @@ function generateStars(rating) {
 function generatePortfolio(images) {
     if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
 
-    return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
+    return `
+        <div class="carousel">
+            <div class="carousel-track">
+                ${images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("")}
+            </div>
+        </div>
+    `;
 }
 
-// 📌 Функция Drag&Drop (движение только при зажатой ЛКМ)
-function setupDrag() {
-    document.querySelectorAll(".portfolio").forEach(portfolio => {
-        let isDragging = false;
-        let startX, startScrollLeft;
+// 📌 НОВАЯ КАРУСЕЛЬ (перетаскивание с ускорением, без инерции)
+function setupNewCarousel() {
+    document.querySelectorAll(".carousel-track").forEach(track => {
+        let isDown = false;
+        let startX, scrollLeft;
 
-        portfolio.addEventListener("mousedown", (e) => {
-            if (e.button !== 0) return; // 📌 Разрешаем только ЛКМ
-            isDragging = true;
-            startX = e.pageX - portfolio.offsetLeft;
-            startScrollLeft = portfolio.scrollLeft;
-            portfolio.style.cursor = "grabbing";
+        track.addEventListener("mousedown", (e) => {
+            isDown = true;
+            startX = e.pageX - track.offsetLeft;
+            scrollLeft = track.scrollLeft;
+            track.style.cursor = "grabbing";
         });
 
-        portfolio.addEventListener("mousemove", (e) => {
-            if (!isDragging) return;
+        track.addEventListener("mouseleave", () => {
+            isDown = false;
+            track.style.cursor = "grab";
+        });
+
+        track.addEventListener("mouseup", () => {
+            isDown = false;
+            track.style.cursor = "grab";
+        });
+
+        track.addEventListener("mousemove", (e) => {
+            if (!isDown) return;
             e.preventDefault();
-            const x = e.pageX - portfolio.offsetLeft;
+            const x = e.pageX - track.offsetLeft;
             const walk = (x - startX) * 2; // 📌 Ускоренное движение
-            portfolio.scrollLeft = startScrollLeft - walk;
+            track.scrollLeft = scrollLeft - walk;
         });
 
-        portfolio.addEventListener("mouseup", () => {
-            isDragging = false;
-            portfolio.style.cursor = "grab";
+        // 📌 Поддержка тачскрина (смартфоны)
+        let touchStartX, touchScrollLeft;
+
+        track.addEventListener("touchstart", (e) => {
+            isDown = true;
+            touchStartX = e.touches[0].pageX - track.offsetLeft;
+            touchScrollLeft = track.scrollLeft;
         });
 
-        portfolio.addEventListener("mouseleave", () => {
-            isDragging = false;
-            portfolio.style.cursor = "grab";
+        track.addEventListener("touchmove", (e) => {
+            if (!isDown) return;
+            const x = e.touches[0].pageX - track.offsetLeft;
+            const walk = (x - touchStartX) * 2;
+            track.scrollLeft = touchScrollLeft - walk;
         });
-    });
 
-    // 📌 Блокируем случайный скроллинг без зажатой ЛКМ
-    document.addEventListener("mouseup", () => {
-        isDragging = false;
+        track.addEventListener("touchend", () => {
+            isDown = false;
+        });
     });
 }
 
@@ -124,11 +144,11 @@ function setupModal() {
     const modalImg = modal.querySelector("img");
     const closeModal = modal.querySelector(".close");
 
-    document.querySelectorAll(".portfolio-img").forEach(img => {
-        img.addEventListener("click", () => {
+    document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("portfolio-img")) {
             modal.style.display = "flex";
-            modalImg.src = img.src;
-        });
+            modalImg.src = e.target.src;
+        }
     });
 
     closeModal.addEventListener("click", () => {
