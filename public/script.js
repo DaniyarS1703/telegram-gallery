@@ -97,15 +97,29 @@ function setupCarousel() {
 
         // 📌 Автоматически скрываем стрелки, если скроллить некуда
         function updateArrows() {
-            leftArrow.style.display = portfolio.scrollLeft > 0 ? "block" : "none";
-            rightArrow.style.display =
-                portfolio.scrollLeft < portfolio.scrollWidth - portfolio.clientWidth ? "block" : "none";
+            const atStart = portfolio.scrollLeft <= 5; // Мягкий порог для избежания скрытия при небольшом движении
+            const atEnd = portfolio.scrollLeft >= (portfolio.scrollWidth - portfolio.clientWidth - 5);
+
+            leftArrow.style.display = atStart ? "none" : "block";
+            rightArrow.style.display = atEnd ? "none" : "block";
         }
+
+        // 📌 Отображение стрелок при наведении на карусель
+        wrapper.addEventListener("mouseenter", () => {
+            leftArrow.style.opacity = portfolio.scrollLeft > 0 ? "1" : "0";
+            rightArrow.style.opacity = portfolio.scrollLeft < (portfolio.scrollWidth - portfolio.clientWidth) ? "1" : "0";
+        });
+
+        // 📌 Скрытие стрелок при уходе мыши (если нет фото в нужную сторону)
+        wrapper.addEventListener("mouseleave", () => {
+            updateArrows();
+        });
 
         portfolio.addEventListener("scroll", updateArrows);
         updateArrows();
     });
 }
+
 
 // 📌 Функция открытия изображений в модальном окне
 function setupModal() {
