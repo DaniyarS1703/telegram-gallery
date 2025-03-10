@@ -43,9 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем функционал модального окна и новую карусель
             setupModal();
-            setupNewCarousel();
+            setupCarouselButtons();
         }
     } catch (error) {
         console.error("Ошибка загрузки фотографов:", error);
@@ -68,68 +67,34 @@ function generateStars(rating) {
     return starsHTML;
 }
 
-// 📌 Функция генерации изображений портфолио
+// 📌 Функция генерации изображений портфолио (убран драг, добавлены стрелки)
 function generatePortfolio(images) {
     if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
 
     return `
         <div class="carousel">
+            <button class="carousel-btn left">&lt;</button>
             <div class="carousel-track">
                 ${images.map(img => `<img src="${img}" alt="Фото" class="portfolio-img">`).join("")}
             </div>
+            <button class="carousel-btn right">&gt;</button>
         </div>
     `;
 }
 
-// 📌 НОВАЯ КАРУСЕЛЬ (перетаскивание с ускорением, без инерции)
-function setupNewCarousel() {
-    document.querySelectorAll(".carousel-track").forEach(track => {
-        let isDown = false;
-        let startX, scrollLeft;
+// 📌 Функция управления каруселью (только стрелки, без драга)
+function setupCarouselButtons() {
+    document.querySelectorAll(".carousel").forEach(carousel => {
+        const track = carousel.querySelector(".carousel-track");
+        const btnLeft = carousel.querySelector(".carousel-btn.left");
+        const btnRight = carousel.querySelector(".carousel-btn.right");
 
-        track.addEventListener("mousedown", (e) => {
-            isDown = true;
-            startX = e.pageX - track.offsetLeft;
-            scrollLeft = track.scrollLeft;
-            track.style.cursor = "grabbing";
+        btnLeft.addEventListener("click", () => {
+            track.scrollBy({ left: -150, behavior: "smooth" });
         });
 
-        track.addEventListener("mouseleave", () => {
-            isDown = false;
-            track.style.cursor = "grab";
-        });
-
-        track.addEventListener("mouseup", () => {
-            isDown = false;
-            track.style.cursor = "grab";
-        });
-
-        track.addEventListener("mousemove", (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - track.offsetLeft;
-            const walk = (x - startX) * 2; // 📌 Ускоренное движение
-            track.scrollLeft = scrollLeft - walk;
-        });
-
-        // 📌 Поддержка тачскрина (смартфоны)
-        let touchStartX, touchScrollLeft;
-
-        track.addEventListener("touchstart", (e) => {
-            isDown = true;
-            touchStartX = e.touches[0].pageX - track.offsetLeft;
-            touchScrollLeft = track.scrollLeft;
-        });
-
-        track.addEventListener("touchmove", (e) => {
-            if (!isDown) return;
-            const x = e.touches[0].pageX - track.offsetLeft;
-            const walk = (x - touchStartX) * 2;
-            track.scrollLeft = touchScrollLeft - walk;
-        });
-
-        track.addEventListener("touchend", () => {
-            isDown = false;
+        btnRight.addEventListener("click", () => {
+            track.scrollBy({ left: 150, behavior: "smooth" });
         });
     });
 }
@@ -144,11 +109,11 @@ function setupModal() {
     const modalImg = modal.querySelector("img");
     const closeModal = modal.querySelector(".close");
 
-    document.addEventListener("click", (e) => {
-        if (e.target.classList.contains("portfolio-img")) {
+    document.querySelectorAll(".portfolio-img").forEach(img => {
+        img.addEventListener("click", () => {
             modal.style.display = "flex";
-            modalImg.src = e.target.src;
-        }
+            modalImg.src = img.src;
+        });
     });
 
     closeModal.addEventListener("click", () => {
