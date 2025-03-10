@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let photographers = await response.json();
 
-        // 📌 Сортируем по рейтингу (если одинаковый – случайное расположение)
+        // 📌 Сортировка по рейтингу (если одинаковый – случайный порядок)
         photographers.sort((a, b) => {
             if (b.rating === a.rating) return Math.random() - 0.5;
             return b.rating - a.rating;
@@ -37,9 +37,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <p>${photographer.bio || "Описание отсутствует"}</p>
                         <div class="rating">${generateStars(photographer.rating)}</div>
                         <div class="portfolio-wrapper">
-                            <button class="arrow left">&#9665;</button>
+                            <button class="arrow left">&#10094;</button>
                             <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
-                            <button class="arrow right">&#9655;</button>
+                            <button class="arrow right">&#10095;</button>
                         </div>
                     </div>
                 `;
@@ -47,10 +47,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем функционал стрелок карусели
-            setupCarouselArrows();
-
-            // 📌 Подключаем функционал модального окна
+            // 📌 Подключаем функционал карусели
+            setupCarousel();
+            // 📌 Подключаем модальное окно
             setupModal();
         }
     } catch (error) {
@@ -59,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// 📌 Функция генерации звезд рейтинга
+// 📌 Генерация звезд рейтинга
 function generateStars(rating) {
     let starsHTML = "";
     for (let i = 1; i <= 5; i++) {
@@ -74,19 +73,19 @@ function generateStars(rating) {
     return starsHTML;
 }
 
-// 📌 Функция генерации изображений портфолио
+// 📌 Генерация изображений портфолио
 function generatePortfolio(images) {
     if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
 
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Функция стрелок в карусели
-function setupCarouselArrows() {
+// 📌 Функция для карусели с кнопками
+function setupCarousel() {
     document.querySelectorAll(".portfolio-wrapper").forEach(wrapper => {
+        const portfolio = wrapper.querySelector(".portfolio");
         const leftArrow = wrapper.querySelector(".arrow.left");
         const rightArrow = wrapper.querySelector(".arrow.right");
-        const portfolio = wrapper.querySelector(".portfolio");
 
         leftArrow.addEventListener("click", () => {
             portfolio.scrollBy({ left: -100, behavior: "smooth" });
@@ -95,25 +94,38 @@ function setupCarouselArrows() {
         rightArrow.addEventListener("click", () => {
             portfolio.scrollBy({ left: 100, behavior: "smooth" });
         });
+
+        // 📌 Автоматически скрываем стрелки, если скроллить некуда
+        function updateArrows() {
+            leftArrow.style.display = portfolio.scrollLeft > 0 ? "block" : "none";
+            rightArrow.style.display =
+                portfolio.scrollLeft < portfolio.scrollWidth - portfolio.clientWidth ? "block" : "none";
+        }
+
+        portfolio.addEventListener("scroll", updateArrows);
+        updateArrows();
     });
 }
 
-// 📌 Функция модального окна с зумом
+// 📌 Функция открытия изображений в модальном окне
 function setupModal() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
-    modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Просмотр"></div>`;
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img src="" alt="Просмотр" id="modal-img">
+        </div>
+    `;
     document.body.appendChild(modal);
 
-    const modalImg = modal.querySelector("img");
+    const modalImg = modal.querySelector("#modal-img");
     const closeModal = modal.querySelector(".close");
 
     document.querySelectorAll(".portfolio-img").forEach(img => {
         img.addEventListener("click", () => {
             modal.style.display = "flex";
             modalImg.src = img.src;
-            modalImg.style.transform = "scale(1)";
-            modalImg.dataset.scale = 1;
         });
     });
 
@@ -127,13 +139,38 @@ function setupModal() {
         }
     });
 
-    // 🔍 Зумирование
-    modalImg.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        let scale = parseFloat(modalImg.dataset.scale || 1);
-        scale += e.deltaY * -0.01;
-        scale = Math.min(Math.max(1, scale), 3); // Лимиты зума
+    // 📌 Добавляем масштабирование изображения (зум колесиком)
+    modalImg.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        let scale = parseFloat(modalImg.style.transform.replace(/scale\((.*)\)/, "$1")) || 1;
+        scale += event.deltaY * -0.01;
+        scale = Math.min(Math.max(1, scale), 3); // Ограничиваем зум от 1x до 3x
         modalImg.style.transform = `scale(${scale})`;
-        modalImg.dataset.scale = scale;
+    });
+
+    // 📌 Позволяем двигать изображение после зума
+    let isDragging = false;
+    let startX, startY, scrollLeft, scrollTop;
+
+    modalImg.addEventListener("mousedown", (event) => {
+        isDragging = true;
+        startX = event.pageX - modalImg.offsetLeft;
+        startY = event.pageY - modalImg.offsetTop;
+        scrollLeft = modalImg.offsetLeft;
+        scrollTop = modalImg.offsetTop;
+        modalImg.style.cursor = "grabbing";
+    });
+
+    document.addEventListener("mousemove", (event) => {
+        if (!isDragging) return;
+        event.preventDefault();
+        const x = event.pageX - startX;
+        const y = event.pageY - startY;
+        modalImg.style.transform = `translate(${x}px, ${y}px) scale(${parseFloat(modalImg.style.transform.replace(/scale\((.*)\)/, "$1"))})`;
+    });
+
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
+        modalImg.style.cursor = "grab";
     });
 }
