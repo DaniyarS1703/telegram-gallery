@@ -36,7 +36,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
                         <div class="rating">${generateStars(photographer.rating)}</div>
-                        <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
+                        <div class="portfolio-container">
+                            <button class="carousel-btn left" onclick="scrollPortfolio(this, -1)">&#10094;</button>
+                            <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
+                            <button class="carousel-btn right" onclick="scrollPortfolio(this, 1)">&#10095;</button>
+                        </div>
                     </div>
                 `;
 
@@ -73,7 +77,31 @@ function generatePortfolio(images) {
         return "<p>Портфолио отсутствует</p>";
     }
 
-    return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
+    return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img" onclick="openModal('${img}')">`).join("");
+}
+
+// 📌 Функция прокрутки карусели
+function scrollPortfolio(button, direction) {
+    const portfolio = button.parentElement.querySelector(".portfolio");
+    if (!portfolio) return;
+
+    const scrollAmount = 150; // px
+    portfolio.scrollBy({ left: scrollAmount * direction, behavior: "smooth" });
+
+    // Обновляем видимость стрелок
+    setTimeout(() => {
+        updateArrowVisibility(button.parentElement);
+    }, 500);
+}
+
+// 📌 Функция обновления видимости стрелок
+function updateArrowVisibility(container) {
+    const portfolio = container.querySelector(".portfolio");
+    const leftButton = container.querySelector(".carousel-btn.left");
+    const rightButton = container.querySelector(".carousel-btn.right");
+
+    leftButton.style.display = portfolio.scrollLeft > 0 ? "block" : "none";
+    rightButton.style.display = portfolio.scrollLeft + portfolio.clientWidth < portfolio.scrollWidth ? "block" : "none";
 }
 
 // 📌 Функция открытия изображений в модальном окне
@@ -86,13 +114,6 @@ function setupModal() {
     const modalImg = modal.querySelector("img");
     const closeModal = modal.querySelector(".close");
 
-    document.querySelectorAll(".portfolio-img").forEach(img => {
-        img.addEventListener("click", () => {
-            modal.style.display = "flex";
-            modalImg.src = img.src;
-        });
-    });
-
     closeModal.addEventListener("click", () => {
         modal.style.display = "none";
     });
@@ -102,4 +123,9 @@ function setupModal() {
             modal.style.display = "none";
         }
     });
+
+    window.openModal = function (src) {
+        modal.style.display = "flex";
+        modalImg.src = src;
+    };
 }

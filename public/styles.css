@@ -7,6 +7,22 @@ body {
     padding: 0;
 }
 
+/* 📌 Контейнер */
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 📌 Заголовок */
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
 /* 📌 Карточки фотографов */
 .photographer-card {
     background: white;
@@ -14,24 +30,34 @@ body {
     margin: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    display: inline-block;
-    width: 280px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
+/* 📌 Аватар фотографа */
 .photographer-card img.avatar {
     width: 80px;
     height: 80px;
     border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 📌 Описание */
+.photographer-card p {
+    font-size: 14px;
+    color: #555;
+    margin: 5px 0;
 }
 
 /* 📌 Стили рейтинга */
 .rating {
     display: flex;
     justify-content: center;
-    margin-top: 5px;
+    margin: 5px 0;
 }
 
+/* 📌 Стили звезд рейтинга */
 .star {
     display: inline-block;
     width: 20px;
@@ -51,79 +77,67 @@ body {
     background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/29/Gold_Star_Empty.svg');
 }
 
-/* 📌 Портфолио */
+/* 📌 Контейнер портфолио */
 .portfolio-container {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    margin-top: 10px;
+    padding: 10px 0;
 }
 
+/* 📌 Портфолио */
 .portfolio {
     display: flex;
-    gap: 5px;
     overflow-x: auto;
-    padding: 10px 0;
-    margin-top: 10px;
+    gap: 10px;
     scroll-behavior: smooth;
-    scrollbar-width: none;
+    max-width: 90%;
+    padding: 10px 0;
 }
 
+/* 📌 Стили изображений портфолио */
 .portfolio-img {
     width: 80px;
     height: 80px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: transform 0.2s ease-in-out;
 }
 
-.portfolio-img:hover {
-    transform: scale(1.1);
-}
-
-/* 📌 Стрелки управления каруселью */
-.carousel-arrow {
+/* 📌 Кнопки прокрутки карусели */
+.carousel-btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
+    background-color: rgba(0, 0, 0, 0.4);
     border: none;
+    color: white;
+    font-size: 20px;
     cursor: pointer;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 18px;
+    padding: 8px 12px;
+    border-radius: 50%;
+    z-index: 10;
+    transition: 0.3s;
     opacity: 0.6;
-    transition: opacity 0.2s, transform 0.2s;
-    width: 30px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.carousel-arrow:hover {
+.carousel-btn:hover {
     opacity: 1;
-    transform: scale(1.1);
 }
 
-.arrow-left {
-    left: -35px;
+.carousel-btn.left {
+    left: -10px;
+    display: none;
 }
 
-.arrow-right {
-    right: -35px;
+.carousel-btn.right {
+    right: -10px;
+    display: none;
 }
 
-/* 📌 Скрываем стрелки, если нет фотографий слева или справа */
-.hide {
-    display: none !important;
-}
-
-/* 📌 Модальное окно */
+/* 📌 Стили модального окна */
 .modal {
     display: none;
     position: fixed;
