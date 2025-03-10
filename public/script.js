@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let photographers = await response.json();
 
-        // 📌 Сортировка по рейтингу (если одинаковый – случайное расположение)
+        // 📌 Сортируем по рейтингу (если одинаковый – случайное расположение)
         photographers.sort((a, b) => {
             if (b.rating === a.rating) return Math.random() - 0.5;
             return b.rating - a.rating;
@@ -36,10 +36,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
                         <div class="rating">${generateStars(photographer.rating)}</div>
-                        <div class="carousel">
-                            <button class="carousel-button carousel-prev">&#10094;</button>
-                            <div class="carousel-track">${generatePortfolio(photographer.portfolio)}</div>
-                            <button class="carousel-button carousel-next">&#10095;</button>
+                        <div class="portfolio-container">
+                            <button class="carousel-button left">&lt;</button>
+                            <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
+                            <button class="carousel-button right">&gt;</button>
                         </div>
                     </div>
                 `;
@@ -47,8 +47,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 photographersList.appendChild(photographerElement);
             });
 
-            // 📌 Подключаем управление каруселью
             setupCarousel();
+            setupModal();
         }
     } catch (error) {
         console.error("Ошибка загрузки фотографов:", error);
@@ -56,43 +56,65 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// 📌 Функция генерации звезд рейтинга
 function generateStars(rating) {
     let starsHTML = "";
     for (let i = 1; i <= 5; i++) {
         if (i <= Math.floor(rating)) {
-            starsHTML += `<span class="star full"></span>`; // Полная звезда
+            starsHTML += `<span class="star full"></span>`;
         } else if (i - rating < 1) {
-            starsHTML += `<span class="star half"></span>`; // Половина звезды
+            starsHTML += `<span class="star half"></span>`;
         } else {
-            starsHTML += `<span class="star empty"></span>`; // Пустая звезда
+            starsHTML += `<span class="star empty"></span>`;
         }
     }
     return starsHTML;
 }
 
-// 📌 Функция генерации изображений портфолио
 function generatePortfolio(images) {
     if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
 
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Функция управления каруселью (перемещение при нажатии на стрелки)
 function setupCarousel() {
-    document.querySelectorAll(".photographer-card").forEach(card => {
-        const track = card.querySelector(".carousel-track");
-        const prevButton = card.querySelector(".carousel-prev");
-        const nextButton = card.querySelector(".carousel-next");
+    document.querySelectorAll(".portfolio-container").forEach(container => {
+        const portfolio = container.querySelector(".portfolio");
+        const leftButton = container.querySelector(".carousel-button.left");
+        const rightButton = container.querySelector(".carousel-button.right");
 
-        if (!track || !prevButton || !nextButton) return;
-
-        prevButton.addEventListener("click", () => {
-            track.scrollBy({ left: -150, behavior: "smooth" });
+        leftButton.addEventListener("click", () => {
+            portfolio.scrollBy({ left: -100, behavior: "smooth" });
         });
 
-        nextButton.addEventListener("click", () => {
-            track.scrollBy({ left: 150, behavior: "smooth" });
+        rightButton.addEventListener("click", () => {
+            portfolio.scrollBy({ left: 100, behavior: "smooth" });
         });
+    });
+}
+
+function setupModal() {
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Просмотр"></div>`;
+    document.body.appendChild(modal);
+
+    const modalImg = modal.querySelector("img");
+    const closeModal = modal.querySelector(".close");
+
+    document.querySelectorAll(".portfolio-img").forEach(img => {
+        img.addEventListener("click", () => {
+            modal.style.display = "flex";
+            modalImg.src = img.src;
+        });
+    });
+
+    closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
     });
 }
