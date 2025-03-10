@@ -25,20 +25,6 @@ body {
     border-radius: 50%;
 }
 
-/* 📌 Стили рейтинга */
-.rating {
-    display: flex;
-    justify-content: center;
-    margin-top: 5px;
-}
-
-.star {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-size: cover;
-}
-
 /* 📌 Карусель */
 .portfolio-wrapper {
     position: relative;
@@ -54,6 +40,21 @@ body {
     padding: 10px 0;
     margin-top: 10px;
     scroll-behavior: smooth;
+    max-width: 100%;
+}
+
+/* 📌 Изображения в карусели */
+.portfolio-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.portfolio-img:hover {
+    transform: scale(1.05);
 }
 
 /* 📌 Стрелки */
