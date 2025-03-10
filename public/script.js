@@ -36,18 +36,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
                         <div class="rating">${generateStars(photographer.rating)}</div>
-                        <div class="portfolio-container">
-                            <button class="carousel-arrow arrow-left hide">&lt;</button>
-                            <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
-                            <button class="carousel-arrow arrow-right hide">&gt;</button>
-                        </div>
+                        <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
                     </div>
                 `;
 
                 photographersList.appendChild(photographerElement);
             });
 
-            setupCarousel();
+            // 📌 Подключаем функционал модального окна
             setupModal();
         }
     } catch (error) {
@@ -61,11 +57,11 @@ function generateStars(rating) {
     let starsHTML = "";
     for (let i = 1; i <= 5; i++) {
         if (i <= Math.floor(rating)) {
-            starsHTML += `<span class="star full"></span>`;
+            starsHTML += `<span class="star full"></span>`; // Полная звезда
         } else if (i - rating < 1) {
-            starsHTML += `<span class="star half"></span>`;
+            starsHTML += `<span class="star half"></span>`; // Половина звезды
         } else {
-            starsHTML += `<span class="star empty"></span>`;
+            starsHTML += `<span class="star empty"></span>`; // Пустая звезда
         }
     }
     return starsHTML;
@@ -73,34 +69,37 @@ function generateStars(rating) {
 
 // 📌 Функция генерации изображений портфолио
 function generatePortfolio(images) {
-    if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
+    if (!images || !Array.isArray(images) || images.length === 0) {
+        return "<p>Портфолио отсутствует</p>";
+    }
 
     return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Функция карусели
-function setupCarousel() {
-    document.querySelectorAll(".portfolio-container").forEach(container => {
-        const portfolio = container.querySelector(".portfolio");
-        const leftArrow = container.querySelector(".arrow-left");
-        const rightArrow = container.querySelector(".arrow-right");
+// 📌 Функция открытия изображений в модальном окне
+function setupModal() {
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><img src="" alt="Просмотр"></div>`;
+    document.body.appendChild(modal);
 
-        function updateArrows() {
-            leftArrow.classList.toggle("hide", portfolio.scrollLeft <= 0);
-            rightArrow.classList.toggle("hide", portfolio.scrollLeft >= portfolio.scrollWidth - portfolio.clientWidth);
+    const modalImg = modal.querySelector("img");
+    const closeModal = modal.querySelector(".close");
+
+    document.querySelectorAll(".portfolio-img").forEach(img => {
+        img.addEventListener("click", () => {
+            modal.style.display = "flex";
+            modalImg.src = img.src;
+        });
+    });
+
+    closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
         }
-
-        leftArrow.addEventListener("click", () => {
-            portfolio.scrollBy({ left: -100, behavior: "smooth" });
-            updateArrows();
-        });
-
-        rightArrow.addEventListener("click", () => {
-            portfolio.scrollBy({ left: 100, behavior: "smooth" });
-            updateArrows();
-        });
-
-        portfolio.addEventListener("scroll", updateArrows);
-        updateArrows();
     });
 }
