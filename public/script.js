@@ -75,7 +75,7 @@ function generatePortfolio(images) {
     return `
         <div class="carousel">
             <div class="carousel-track">
-                ${images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("")}
+                ${images.map(img => `<img src="${img}" alt="Фото" class="portfolio-img">`).join("")}
             </div>
         </div>
     `;

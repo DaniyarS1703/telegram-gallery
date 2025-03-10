@@ -7,7 +7,7 @@ body {
     padding: 0;
 }
 
-/* 📌 Карточки фотографов */
+/* 📌 Контейнер фотографов */
 .photographer-card {
     background: white;
     padding: 15px;
@@ -15,17 +15,18 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: inline-block;
-    width: 280px;
+    width: 300px;
     text-align: center;
 }
 
+/* 📌 Аватар фотографа */
 .photographer-card img.avatar {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
 }
 
-/* 📌 Стили рейтинга */
+/* 📌 Рейтинг */
 .rating {
     display: flex;
     justify-content: center;
@@ -40,41 +41,54 @@ body {
 }
 
 .star.full {
-    background-image: url('images/full_star.png'); /* Локальный путь */
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/4d/Gold_Star.svg');
 }
 
 .star.half {
-    background-image: url('images/half_star.png'); /* Локальный путь */
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/2d/Gold_Star_Half.svg');
 }
 
 .star.empty {
-    background-image: url('images/empty_star.png'); /* Локальный путь */
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/29/Gold_Star_Empty.svg');
 }
 
-/* 📌 Портфолио */
-.portfolio {
-    display: flex;
-    gap: 5px;
-    overflow-x: auto;
+/* 📌 Карусель */
+.carousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 250px; /* 📌 Можно настроить ширину */
+    margin: 0 auto;
     padding: 10px 0;
-    margin-top: 10px;
-    scroll-behavior: smooth;
-    cursor: grab;
 }
 
-.portfolio:active {
-    cursor: grabbing;
+.carousel-track {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none;
 }
 
 .portfolio-img {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     object-fit: cover;
     border-radius: 5px;
     cursor: pointer;
+    transition: transform 0.2s;
 }
 
-/* 📌 Стили модального окна */
+.portfolio-img:hover {
+    transform: scale(1.1);
+}
+
+/* 📌 Модальное окно */
 .modal {
     display: none;
     position: fixed;
@@ -98,12 +112,6 @@ body {
     width: 100%;
     height: auto;
     border-radius: 10px;
-    transform-origin: center;
-    transition: transform 0.3s ease;
-}
-
-.modal-content img.zoom {
-    transform: scale(2);
 }
 
 .close {
