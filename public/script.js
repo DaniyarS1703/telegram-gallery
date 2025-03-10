@@ -36,11 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <h2>${photographer.name}</h2>
                         <p>${photographer.bio || "Описание отсутствует"}</p>
                         <div class="rating">${generateStars(photographer.rating)}</div>
-                        <div class="portfolio-container">
-                            <button class="carousel-btn left" onclick="scrollPortfolio(this, -1)">&#10094;</button>
-                            <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
-                            <button class="carousel-btn right" onclick="scrollPortfolio(this, 1)">&#10095;</button>
-                        </div>
+                        <div class="portfolio">${generatePortfolio(photographer.portfolio)}</div>
                     </div>
                 `;
 
@@ -73,38 +69,12 @@ function generateStars(rating) {
 
 // 📌 Функция генерации изображений портфолио
 function generatePortfolio(images) {
-    if (!images || !Array.isArray(images) || images.length === 0) {
-        return "<p>Портфолио отсутствует</p>";
-    }
+    if (!images || images.length === 0) return "<p>Портфолио отсутствует</p>";
 
-    return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img" onclick="openModal('${img}')">`).join("");
+    return images.map(img => `<img src="${img}" alt="Фото из портфолио" class="portfolio-img">`).join("");
 }
 
-// 📌 Функция прокрутки карусели
-function scrollPortfolio(button, direction) {
-    const portfolio = button.parentElement.querySelector(".portfolio");
-    if (!portfolio) return;
-
-    const scrollAmount = 150; // px
-    portfolio.scrollBy({ left: scrollAmount * direction, behavior: "smooth" });
-
-    // Обновляем видимость стрелок
-    setTimeout(() => {
-        updateArrowVisibility(button.parentElement);
-    }, 500);
-}
-
-// 📌 Функция обновления видимости стрелок
-function updateArrowVisibility(container) {
-    const portfolio = container.querySelector(".portfolio");
-    const leftButton = container.querySelector(".carousel-btn.left");
-    const rightButton = container.querySelector(".carousel-btn.right");
-
-    leftButton.style.display = portfolio.scrollLeft > 0 ? "block" : "none";
-    rightButton.style.display = portfolio.scrollLeft + portfolio.clientWidth < portfolio.scrollWidth ? "block" : "none";
-}
-
-// 📌 Функция открытия изображений в модальном окне
+// 📌 Функция модального окна с зумом
 function setupModal() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
@@ -113,6 +83,15 @@ function setupModal() {
 
     const modalImg = modal.querySelector("img");
     const closeModal = modal.querySelector(".close");
+
+    document.querySelectorAll(".portfolio-img").forEach(img => {
+        img.addEventListener("click", () => {
+            modal.style.display = "flex";
+            modalImg.src = img.src;
+            modalImg.style.transform = "scale(1)";
+            modalImg.dataset.scale = 1;
+        });
+    });
 
     closeModal.addEventListener("click", () => {
         modal.style.display = "none";
@@ -124,8 +103,37 @@ function setupModal() {
         }
     });
 
-    window.openModal = function (src) {
-        modal.style.display = "flex";
-        modalImg.src = src;
-    };
+    // 🔍 Зумирование
+    modalImg.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        let scale = parseFloat(modalImg.dataset.scale || 1);
+        scale += e.deltaY * -0.01;
+        scale = Math.min(Math.max(1, scale), 3); // Лимиты зума
+        modalImg.style.transform = `scale(${scale})`;
+        modalImg.dataset.scale = scale;
+    });
+
+    // 🎯 Перемещение зумированного изображения
+    let isDragging = false, startX, startY, imgX = 0, imgY = 0;
+
+    modalImg.addEventListener("mousedown", (e) => {
+        if (parseFloat(modalImg.dataset.scale) > 1) {
+            isDragging = true;
+            startX = e.clientX - imgX;
+            startY = e.clientY - imgY;
+            modalImg.style.cursor = "grabbing";
+        }
+    });
+
+    window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        imgX = e.clientX - startX;
+        imgY = e.clientY - startY;
+        modalImg.style.transform = `scale(${modalImg.dataset.scale}) translate(${imgX}px, ${imgY}px)`;
+    });
+
+    window.addEventListener("mouseup", () => {
+        isDragging = false;
+        modalImg.style.cursor = "grab";
+    });
 }
