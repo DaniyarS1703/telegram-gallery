@@ -55,6 +55,7 @@ h1 {
     display: flex;
     justify-content: center;
     margin: 5px 0;
+    gap: 3px;
 }
 
 /* 📌 Стили звезд рейтинга */
@@ -62,7 +63,8 @@ h1 {
     display: inline-block;
     width: 20px;
     height: 20px;
-    background-size: cover;
+    background-size: contain;
+    background-repeat: no-repeat;
 }
 
 .star.full {
