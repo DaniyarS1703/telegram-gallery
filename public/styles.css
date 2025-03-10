@@ -1,11 +1,62 @@
-/* 📌 Стили карусели */
+/* 📌 Основные стили */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* 📌 Карточки фотографов */
+.photographer-card {
+    background: white;
+    padding: 15px;
+    margin: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    width: 280px;
+    text-align: center;
+}
+
+.photographer-card img.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+
+/* 📌 Стили рейтинга */
+.rating {
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+.star {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+}
+
+.star.full {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/4d/Gold_Star.svg');
+}
+
+.star.half {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/2d/Gold_Star_Half.svg');
+}
+
+.star.empty {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/29/Gold_Star_Empty.svg');
+}
+
+/* 📌 Карусель */
 .carousel {
     position: relative;
-    display: flex;
-    align-items: center;
+    width: 100%;
     overflow: hidden;
-    width: 90%;
-    margin: 10px auto;
+    padding: 10px 0;
 }
 
 .carousel-track {
@@ -15,40 +66,6 @@
     scroll-behavior: smooth;
     white-space: nowrap;
     padding: 10px 0;
-    -ms-overflow-style: none; /* скрыть полосы прокрутки в IE */
-    scrollbar-width: none; /* скрыть полосы прокрутки в Firefox */
-}
-
-.carousel-track::-webkit-scrollbar {
-    display: none; /* скрыть полосы прокрутки в Chrome */
-}
-
-.carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background 0.3s ease;
-    z-index: 10;
-}
-
-.carousel-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.carousel-btn.left {
-    left: -20px;
-}
-
-.carousel-btn.right {
-    right: -20px;
 }
 
 .portfolio-img {
@@ -59,7 +76,30 @@
     cursor: pointer;
 }
 
-/* 📌 Убираем драг и скроллинг всей страницы */
-html, body {
-    overflow-x: hidden;
+/* 📌 Стили стрелок */
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    border-radius: 5px;
+    z-index: 10;
+    transition: background 0.3s;
+}
+
+.carousel-button:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-prev {
+    left: 5px;
+}
+
+.carousel-next {
+    right: 5px;
 }
