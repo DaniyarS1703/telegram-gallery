@@ -17,7 +17,6 @@ body {
     display: inline-block;
     width: 280px;
     text-align: center;
-    position: relative;
 }
 
 .photographer-card img.avatar {
@@ -55,8 +54,10 @@ body {
 /* 📌 Портфолио */
 .portfolio-container {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    overflow: hidden;
     margin-top: 10px;
 }
 
@@ -65,7 +66,9 @@ body {
     gap: 5px;
     overflow-x: auto;
     padding: 10px 0;
+    margin-top: 10px;
     scroll-behavior: smooth;
+    scrollbar-width: none;
 }
 
 .portfolio-img {
@@ -74,43 +77,53 @@ body {
     object-fit: cover;
     border-radius: 5px;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease-in-out;
 }
 
 .portfolio-img:hover {
     transform: scale(1.1);
 }
 
-/* 📌 Стили для стрелок карусели */
-.carousel-button {
+/* 📌 Стрелки управления каруселью */
+.carousel-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.3); /* Прозрачность 30% */
+    background-color: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
-    padding: 10px 15px;
     cursor: pointer;
-    font-size: 24px;
-    border-radius: 50%;
-    transition: background 0.3s ease, transform 0.2s ease;
-    z-index: 10;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 18px;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+    width: 30px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.carousel-button:hover {
-    background: rgba(0, 0, 0, 0.6);
-    transform: translateY(-50%) scale(1.1);
+.carousel-arrow:hover {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
-.carousel-button.left {
-    left: 5px;
+.arrow-left {
+    left: -35px;
 }
 
-.carousel-button.right {
-    right: 5px;
+.arrow-right {
+    right: -35px;
 }
 
-/* 📌 Стили модального окна */
+/* 📌 Скрываем стрелки, если нет фотографий слева или справа */
+.hide {
+    display: none !important;
+}
+
+/* 📌 Модальное окно */
 .modal {
     display: none;
     position: fixed;
